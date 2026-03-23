@@ -1,34 +1,66 @@
 import { PageHeader } from "../ui/PageHeader";
 
-const mealSections = [
+const breakfastItems = [
   {
-    title: "Breakfast",
-    items: [
-      { name: "Bagels", unit: "dozen", pack: "12" },
-      { name: "Fresh fruit", unit: "trays", pack: "1" },
-      { name: "Yogurt cups", unit: "cases", pack: "24" },
-    ],
+    name: "Bagels",
+    unit: "dozen",
+    pack: "12",
+    cutoff: "7:15 AM",
+    notes: "Plain + everything",
   },
   {
-    title: "Lunch",
-    items: [
-      { name: "Chicken chili", unit: "pans", pack: "1" },
-      { name: "Cornbread", unit: "loaves", pack: "8" },
-      { name: "Green salad", unit: "bags", pack: "6" },
-    ],
+    name: "Fresh fruit",
+    unit: "trays",
+    pack: "1",
+    cutoff: "7:15 AM",
+    notes: "Seasonal mix",
+  },
+  {
+    name: "Yogurt cups",
+    unit: "cases",
+    pack: "24",
+    cutoff: "7:15 AM",
+    notes: "Low sugar",
   },
 ];
 
-const basics = [
-  "Milk cartons",
-  "Turkey sandwiches",
-  "Granola bars",
-  "Veggie tray",
-  "Apple slices",
-  "Juice boxes",
+const lunchItems = [
+  {
+    name: "Chicken chili",
+    unit: "pans",
+    pack: "1",
+    cutoff: "11:00 AM",
+    notes: "Mild",
+  },
+  {
+    name: "Cornbread",
+    unit: "loaves",
+    pack: "8",
+    cutoff: "11:00 AM",
+    notes: "Butter on side",
+  },
+  {
+    name: "Green salad",
+    unit: "bags",
+    pack: "6",
+    cutoff: "11:00 AM",
+    notes: "No tomatoes",
+  },
+];
+
+const basicsLibrary = [
+  { name: "Milk cartons", unit: "cases", pack: "24" },
+  { name: "Turkey sandwiches", unit: "trays", pack: "12" },
+  { name: "Granola bars", unit: "cases", pack: "48" },
+  { name: "Veggie tray", unit: "trays", pack: "1" },
+  { name: "Apple slices", unit: "bags", pack: "10" },
+  { name: "Juice boxes", unit: "cases", pack: "40" },
 ];
 
 export function TodaySetup() {
+  const menuCols = "1.7fr 0.8fr 0.8fr 0.9fr 1.2fr 0.7fr";
+  const basicsCols = "1.6fr 0.9fr 0.9fr 1fr";
+
   return (
     <div className="stack">
       <PageHeader
@@ -43,59 +75,158 @@ export function TodaySetup() {
         meta={
           <div className="meta-row">
             <span className="pill">Date: Mar 23, 2026</span>
-            <span className="pill subtle">Lock time: 4:30 PM</span>
+            <span className="pill subtle">Default lock time: 4:30 PM</span>
+            <span className="pill subtle">Last saved: 2:05 PM</span>
           </div>
         }
       />
 
-      <div className="grid grid-2 stagger">
-        {mealSections.map((meal, index) => (
-          <section
-            key={meal.title}
-            className="card"
-            style={{ "--i": index } as React.CSSProperties}
-          >
+      <div className="grid" style={{ gridTemplateColumns: "2fr 1fr" }}>
+        <div className="stack">
+          <section className="panel">
             <div className="card-head">
-              <h2>{meal.title}</h2>
-              <button className="button ghost" type="button">
-                Add item
-              </button>
+              <div>
+                <h2>Breakfast menu</h2>
+                <div className="muted">{breakfastItems.length} items</div>
+              </div>
+              <div className="button-row">
+                <button className="button ghost" type="button">
+                  Add item
+                </button>
+                <button className="button ghost" type="button">
+                  Apply basics
+                </button>
+              </div>
             </div>
-            <div className="list">
-              {meal.items.map((item) => (
-                <div key={item.name} className="list-item">
+            <div className="data-table">
+              <div className="data-row header" style={{ "--cols": menuCols } as React.CSSProperties}>
+                <div>Item</div>
+                <div>Unit</div>
+                <div>Pack</div>
+                <div>Cutoff</div>
+                <div>Notes</div>
+                <div>Action</div>
+              </div>
+              {breakfastItems.map((item) => (
+                <div key={item.name} className="data-row" style={{ "--cols": menuCols } as React.CSSProperties}>
+                  <div className="item-title">{item.name}</div>
+                  <div className="muted">{item.unit}</div>
+                  <div>{item.pack}</div>
+                  <div>{item.cutoff}</div>
+                  <div className="muted">{item.notes}</div>
                   <div>
-                    <div className="item-title">{item.name}</div>
-                    <div className="muted">
-                      Unit: {item.unit} · Pack size: {item.pack}
-                    </div>
+                    <button className="button ghost small" type="button">
+                      Edit
+                    </button>
                   </div>
-                  <button className="chip" type="button">
-                    Edit
-                  </button>
                 </div>
               ))}
             </div>
           </section>
-        ))}
-      </div>
 
-      <section className="card">
-        <div className="card-head">
-          <h2>Basic templates</h2>
-          <button className="button ghost" type="button">
-            Manage templates
-          </button>
+          <section className="panel">
+            <div className="card-head">
+              <div>
+                <h2>Lunch menu</h2>
+                <div className="muted">{lunchItems.length} items</div>
+              </div>
+              <div className="button-row">
+                <button className="button ghost" type="button">
+                  Add item
+                </button>
+                <button className="button ghost" type="button">
+                  Apply basics
+                </button>
+              </div>
+            </div>
+            <div className="data-table">
+              <div className="data-row header" style={{ "--cols": menuCols } as React.CSSProperties}>
+                <div>Item</div>
+                <div>Unit</div>
+                <div>Pack</div>
+                <div>Cutoff</div>
+                <div>Notes</div>
+                <div>Action</div>
+              </div>
+              {lunchItems.map((item) => (
+                <div key={item.name} className="data-row" style={{ "--cols": menuCols } as React.CSSProperties}>
+                  <div className="item-title">{item.name}</div>
+                  <div className="muted">{item.unit}</div>
+                  <div>{item.pack}</div>
+                  <div>{item.cutoff}</div>
+                  <div className="muted">{item.notes}</div>
+                  <div>
+                    <button className="button ghost small" type="button">
+                      Edit
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
         </div>
-        <div className="pill-row">
-          {basics.map((item) => (
-            <span key={item} className="pill">
-              {item}
-            </span>
-          ))}
+
+        <div className="stack">
+          <section className="panel">
+            <div className="card-head">
+              <h2>Basics library</h2>
+              <button className="button ghost" type="button">
+                Manage basics
+              </button>
+            </div>
+            <label className="field compact">
+              <span>Search basics</span>
+              <input type="text" placeholder="Search by item" />
+            </label>
+            <div className="data-table">
+              <div className="data-row header" style={{ "--cols": basicsCols } as React.CSSProperties}>
+                <div>Item</div>
+                <div>Unit</div>
+                <div>Pack</div>
+                <div>Add</div>
+              </div>
+              {basicsLibrary.map((item) => (
+                <div key={item.name} className="data-row" style={{ "--cols": basicsCols } as React.CSSProperties}>
+                  <div>{item.name}</div>
+                  <div className="muted">{item.unit}</div>
+                  <div>{item.pack}</div>
+                  <div className="button-row">
+                    <button className="button ghost small" type="button">
+                      Breakfast
+                    </button>
+                    <button className="button ghost small" type="button">
+                      Lunch
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section className="panel">
+            <div className="card-head">
+              <h2>Order timing</h2>
+            </div>
+            <div className="form">
+              <label className="field">
+                <span>Default lock time</span>
+                <input type="time" defaultValue="16:30" />
+              </label>
+              <label className="field">
+                <span>Breakfast cutoff</span>
+                <input type="time" defaultValue="07:15" />
+              </label>
+              <label className="field">
+                <span>Lunch cutoff</span>
+                <input type="time" defaultValue="11:00" />
+              </label>
+              <button className="button primary" type="button">
+                Update timing
+              </button>
+            </div>
+          </section>
         </div>
-      </section>
+      </div>
     </div>
   );
 }
-
