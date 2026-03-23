@@ -1,190 +1,133 @@
-﻿import { PageHeader } from "../ui/PageHeader";
+import { PageHeader } from "../ui/PageHeader";
 
-const totals = [
-  { item: "Bagels", meal: "Breakfast", total: "96" },
-  { item: "Yogurt cups", meal: "Breakfast", total: "180" },
-  { item: "Chicken chili", meal: "Supper", total: "42" },
-  { item: "Cornbread", meal: "Supper", total: "38" },
+const breakfastTotals = [
+  { item: "Bagels", unit: "dozen", total: "96" },
+  { item: "Yogurt cups", unit: "cases", total: "180" },
+  { item: "Fresh fruit", unit: "trays", total: "28" },
 ];
 
-const locationRows = [
-  {
-    name: "Riverside Community Center",
-    status: "Submitted",
-    updatedAt: "1:10 PM",
-    isMissing: false,
-    isLate: false,
-  },
-  {
-    name: "Northside Middle School",
-    status: "Missing",
-    updatedAt: "—",
-    isMissing: true,
-    isLate: false,
-  },
-  {
-    name: "Oak Hill Library",
-    status: "Late",
-    updatedAt: "1:34 PM",
-    isMissing: false,
-    isLate: true,
-  },
-];
-
-const orderItems = [
-  { item: "Bagels", meal: "Breakfast", unit: "dozen", qty: 6 },
-  { item: "Cream cheese", meal: "Breakfast", unit: "tubs", qty: 10 },
-  { item: "Yogurt cups", meal: "Breakfast", unit: "cases", qty: 2 },
-  { item: "Chicken chili", meal: "Supper", unit: "pans", qty: 3 },
-  { item: "Cornbread", meal: "Supper", unit: "loaves", qty: 4 },
+const lunchTotals = [
+  { item: "Chicken chili", unit: "pans", total: "42" },
+  { item: "Cornbread", unit: "loaves", total: "38" },
+  { item: "Green salad", unit: "bags", total: "26" },
 ];
 
 export function OrdersToday() {
+  const missingCols = "2fr 1fr 1fr 1fr 1fr";
+
   return (
     <div className="stack">
       <PageHeader
         title="Orders Today"
-        description="Track submissions, review totals, and email orders per location."
+        description="Breakfast and lunch orders are collected separately. Each location can submit one or both."
         actions={
           <div className="button-row">
-            <button className="button">Export aggregate</button>
-            <button className="button">Export by location</button>
-            <button className="button primary">Email per location</button>
+            <button className="button">Export breakfast</button>
+            <button className="button">Export lunch</button>
+            <button className="button primary">Send and lock</button>
           </div>
         }
         meta={
           <div className="meta-row">
-            <span className="pill">10 of 14 locations submitted</span>
-            <span className="pill warning">3 missing</span>
-            <span className="pill subtle">1 late</span>
+            <span className="pill">Breakfast: 9 of 14 submitted</span>
+            <span className="pill">Lunch: 7 of 14 submitted</span>
+            <span className="pill warning">3 missing (either meal)</span>
           </div>
         }
       />
 
-      <div className="grid grid-3">
-        <div className="card stat-card">
+      <div className="grid grid-3 stagger">
+        <div className="card stat-card" style={{ "--i": 0 } as React.CSSProperties}>
           <div className="stat">14</div>
           <div className="muted">Active locations</div>
         </div>
-        <div className="card stat-card">
-          <div className="stat">10</div>
-          <div className="muted">Submitted today</div>
+        <div className="card stat-card" style={{ "--i": 1 } as React.CSSProperties}>
+          <div className="stat">9</div>
+          <div className="muted">Breakfast submitted</div>
         </div>
-        <div className="card stat-card">
-          <div className="stat">4</div>
-          <div className="muted">Need follow-up</div>
+        <div className="card stat-card" style={{ "--i": 2 } as React.CSSProperties}>
+          <div className="stat">7</div>
+          <div className="muted">Lunch submitted</div>
         </div>
+      </div>
+
+      <div className="grid grid-2">
+        <section className="card">
+          <div className="card-head">
+            <h2>Breakfast totals</h2>
+            <button className="button ghost" type="button">
+              View breakfast by location
+            </button>
+          </div>
+          <div className="table">
+            <div className="table-row table-head">
+              <div>Item</div>
+              <div>Unit</div>
+              <div>Total</div>
+            </div>
+            {breakfastTotals.map((row) => (
+              <div key={row.item} className="table-row">
+                <div>{row.item}</div>
+                <div className="muted">{row.unit}</div>
+                <div>{row.total}</div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="card">
+          <div className="card-head">
+            <h2>Lunch totals</h2>
+            <button className="button ghost" type="button">
+              View lunch by location
+            </button>
+          </div>
+          <div className="table">
+            <div className="table-row table-head">
+              <div>Item</div>
+              <div>Unit</div>
+              <div>Total</div>
+            </div>
+            {lunchTotals.map((row) => (
+              <div key={row.item} className="table-row">
+                <div>{row.item}</div>
+                <div className="muted">{row.unit}</div>
+                <div>{row.total}</div>
+              </div>
+            ))}
+          </div>
+        </section>
       </div>
 
       <section className="card">
         <div className="card-head">
-          <h2>Enter a location order</h2>
-          <div className="button-row">
-            <button className="button">Mark submitted</button>
-            <button className="button primary">Save order</button>
-          </div>
-        </div>
-        <div className="form-grid">
-          <label className="field">
-            <span>Location</span>
-            <select defaultValue="Riverside Community Center">
-              <option>Riverside Community Center</option>
-              <option>Northside Middle School</option>
-              <option>Oak Hill Library</option>
-            </select>
-          </label>
-          <div className="field">
-            <span>Status</span>
-            <span className="pill subtle">Draft</span>
-          </div>
-          <label className="field">
-            <span>Last update</span>
-            <input type="text" defaultValue="1:10 PM" />
-          </label>
-        </div>
-        <div className="table">
-          <div className="table-row table-head four">
-            <div>Item</div>
-            <div>Meal</div>
-            <div>Unit</div>
-            <div>Qty</div>
-          </div>
-          {orderItems.map((row) => (
-            <div key={row.item} className="table-row four">
-              <div>{row.item}</div>
-              <div className="muted">{row.meal}</div>
-              <div className="muted">{row.unit}</div>
-              <div>
-                <input className="table-input" type="number" defaultValue={row.qty} />
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="card">
-        <div className="card-head">
-          <h2>Aggregate totals</h2>
-          <div className="button-row">
-            <button className="chip" type="button">
-              Breakfast
-            </button>
-            <button className="chip" type="button">
-              Supper
-            </button>
-          </div>
-        </div>
-        <div className="table">
-          <div className="table-row table-head">
-            <div>Item</div>
-            <div>Meal</div>
-            <div>Total</div>
-          </div>
-          {totals.map((row) => (
-            <div key={row.item} className="table-row">
-              <div>{row.item}</div>
-              <div className="muted">{row.meal}</div>
-              <div>{row.total}</div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="card">
-        <div className="card-head">
-          <h2>Location submissions</h2>
+          <h2>Missing submissions</h2>
           <button className="button ghost" type="button">
-            Lock all
+            Send reminder
           </button>
         </div>
-        <div className="table">
-          <div className="table-row table-head four">
+        <div className="data-table">
+          <div className="data-row header" style={{ "--cols": missingCols } as React.CSSProperties}>
             <div>Location</div>
-            <div>Status</div>
+            <div>Breakfast</div>
+            <div>Lunch</div>
             <div>Last update</div>
-            <div>Actions</div>
+            <div>Status</div>
           </div>
-          {locationRows.map((row) => (
-            <div key={row.name} className="table-row four">
-              <div>{row.name}</div>
-              <div
-                className={
-                  row.isMissing || row.isLate ? "pill warning" : "pill subtle"
-                }
-              >
-                {row.status}
-              </div>
-              <div className="muted">{row.updatedAt}</div>
-              <div className="button-row">
-                <button className="button" type="button">
-                  Email
-                </button>
-                <button className="button ghost" type="button">
-                  Lock
-                </button>
-              </div>
-            </div>
-          ))}
+          <div className="data-row" style={{ "--cols": missingCols } as React.CSSProperties}>
+            <div>Oak Hill Library</div>
+            <div className="muted">Missing</div>
+            <div className="muted">Submitted</div>
+            <div>1 hr ago</div>
+            <div>Late</div>
+          </div>
+          <div className="data-row" style={{ "--cols": missingCols } as React.CSSProperties}>
+            <div>Southridge Family Hub</div>
+            <div className="muted">Submitted</div>
+            <div className="muted">Missing</div>
+            <div>35 min ago</div>
+            <div>Open</div>
+          </div>
         </div>
       </section>
     </div>
