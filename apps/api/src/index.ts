@@ -1,6 +1,6 @@
-﻿import express from "express";
+import express from "express";
 
-type MealType = "breakfast" | "supper";
+type MealType = "breakfast" | "lunch";
 
 type DailyMenuItem = {
   id: string;
@@ -57,7 +57,7 @@ const todayMenu: DailyMenuItem[] = [
   },
   {
     id: "menu-3",
-    mealType: "supper",
+    mealType: "lunch",
     name: "Chicken chili",
     unit: "pans",
     packSize: "1",
@@ -115,7 +115,7 @@ const locationOrders: LocationOrder[] = [
     locationId: "loc-2",
     locationName: "Northside Middle School",
     status: "missing",
-    updatedAt: "—",
+    updatedAt: "�",
     items: [],
   },
   {
@@ -127,7 +127,7 @@ const locationOrders: LocationOrder[] = [
       {
         menuItemId: "menu-3",
         name: "Chicken chili",
-        mealType: "supper",
+        mealType: "lunch",
         unit: "pans",
         quantity: 3,
       },
@@ -138,8 +138,8 @@ const locationOrders: LocationOrder[] = [
 const aggregateTotals = [
   { item: "Bagels", meal: "Breakfast", total: 96 },
   { item: "Yogurt cups", meal: "Breakfast", total: 180 },
-  { item: "Chicken chili", meal: "Supper", total: 42 },
-  { item: "Cornbread", meal: "Supper", total: 38 },
+  { item: "Chicken chili", meal: "Lunch", total: 42 },
+  { item: "Cornbread", meal: "Lunch", total: 38 },
 ];
 
 app.get("/health", (_req, res) => {

@@ -37,6 +37,8 @@ export function LocationDetail() {
 
   const donationRows = donationsByLocation[location.id] ?? [];
   const historyRows = orderHistoryByLocation[location.id] ?? [];
+  const historyCols = "1.2fr 1fr 1fr 1fr";
+  const donationCols = "1.6fr 1fr 1fr";
 
   return (
     <div className="stack">
@@ -200,17 +202,17 @@ export function LocationDetail() {
               </button>
             </div>
             <div className="data-table">
-              <div className="data-row header">
+              <div className="data-row header" style={{ "--cols": historyCols } as React.CSSProperties}>
                 <div>Date</div>
                 <div>Breakfast</div>
-                <div>Supper</div>
+                <div>Lunch</div>
                 <div>Status</div>
               </div>
               {historyRows.map((row) => (
-                <div key={row.date} className="data-row">
+                <div key={row.date} className="data-row" style={{ "--cols": historyCols } as React.CSSProperties}>
                   <div>{row.date}</div>
                   <div>{row.breakfast}</div>
-                  <div>{row.supper}</div>
+                  <div>{row.lunch}</div>
                   <div>{row.status}</div>
                 </div>
               ))}
@@ -239,13 +241,13 @@ export function LocationDetail() {
               </button>
             </div>
             <div className="data-table">
-              <div className="data-row header">
+              <div className="data-row header" style={{ "--cols": donationCols } as React.CSSProperties}>
                 <div>Donor</div>
                 <div>Amount</div>
                 <div>Date</div>
               </div>
               {donationRows.map((row) => (
-                <div key={row.donor} className="data-row">
+                <div key={row.donor} className="data-row" style={{ "--cols": donationCols } as React.CSSProperties}>
                   <div>{row.donor}</div>
                   <div>{row.amount}</div>
                   <div>{row.date}</div>

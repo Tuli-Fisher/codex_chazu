@@ -1,4 +1,4 @@
-﻿# Technical Spec: Seasonal Meal Program Admin System
+# Technical Spec: Seasonal Meal Program Admin System
 
 ## Architecture (Recommended)
 - Monorepo with two apps:
@@ -80,7 +80,7 @@
   - `id` (pk), `season_id` (fk), `date`, `lock_at`
 
 - `daily_menu_items`
-  - `id` (pk), `daily_menu_id` (fk), `meal_type` (breakfast|supper)
+  - `id` (pk), `daily_menu_id` (fk), `meal_type` (breakfast|lunch)
   - `item_name`, `unit`, `pack_size`, `notes`, `cutoff_time`
 
 - `orders`
@@ -197,6 +197,7 @@
 - Stubbed the admin frontend shell with React Router, a simple localStorage-backed mock login, and placeholder pages for all MVP routes.
 - Reworked the Locations UI into a productivity grid, added `/locations/:locationId` detail tabs (overview/history/donations), and wired location filters for History/Donations via query string.
 - Separated Orders Today into breakfast and lunch totals with distinct export actions and missing submission tracking.
+- Renamed the second meal from supper to lunch across specs, mock data, and UI labels.
 - Implemented mock data for Orders Today, including per-location order entry, missing/late flags, and email/lock actions.
 - Added mock Express endpoints for core resources (auth, menus, orders, locations, fundraising, donations, participants).
 

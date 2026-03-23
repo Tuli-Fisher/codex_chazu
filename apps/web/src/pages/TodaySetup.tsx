@@ -1,4 +1,4 @@
-﻿import { PageHeader } from "../ui/PageHeader";
+import { PageHeader } from "../ui/PageHeader";
 
 const mealSections = [
   {
@@ -10,7 +10,7 @@ const mealSections = [
     ],
   },
   {
-    title: "Supper",
+    title: "Lunch",
     items: [
       { name: "Chicken chili", unit: "pans", pack: "1" },
       { name: "Cornbread", unit: "loaves", pack: "8" },
@@ -33,7 +33,7 @@ export function TodaySetup() {
     <div className="stack">
       <PageHeader
         title="Today Setup"
-        description="Build the daily menu for breakfast and supper. Items here drive all location orders."
+        description="Build the daily menu for breakfast and lunch. Items here drive all location orders."
         actions={
           <div className="button-row">
             <button className="button">Apply basic template</button>
@@ -67,7 +67,7 @@ export function TodaySetup() {
                   <div>
                     <div className="item-title">{item.name}</div>
                     <div className="muted">
-                      Unit: {item.unit} · Pack size: {item.pack}
+                      Unit: {item.unit} � Pack size: {item.pack}
                     </div>
                   </div>
                   <button className="chip" type="button">
