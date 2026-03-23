@@ -1,0 +1,18 @@
+node_modules
+.DS_Store
+.vscode
+
+# builds
+/dist
+/.vite
+
+# env
+.env
+.env.*
+
+# logs
+*.log
+npm-debug.log*
+
+# TypeScript
+*.tsbuildinfo

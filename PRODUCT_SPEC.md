@@ -35,7 +35,7 @@ Build an admin-only web system to manage seasonal meal logistics across multiple
 - Admin sets the list of items available today for Breakfast and Supper.
 - Items can be:
   - Custom ad hoc entries, and
-  - Selected from a saved “Basics” list (global across seasons, to reduce typing/typos).
+  - Selected from a saved “Basic templates” list (global across seasons, to reduce typing/typos).
 - Optional per-item fields:
   - Unit label (e.g., "bagels", "loaves")
   - Pack size (for procurement conversion)
@@ -43,6 +43,7 @@ Build an admin-only web system to manage seasonal meal logistics across multiple
   - Cutoff time for orders (used by SMS later; not enforced for admin entry)
 - Menu applies to all locations for that day.
 - Today Setup loads the existing menu for that date (if any). Edits apply immediately to that date’s menu.
+- Action: apply a basic template (no automatic copy-forward).
 - Menu edits after orders exist:
   - Orders remain editable after submit.
   - Orders lock only when the admin locks them (per order or for the whole date), or when the configured lock time passes.
@@ -52,14 +53,15 @@ Build an admin-only web system to manage seasonal meal logistics across multiple
 ### 3. Orders Today (Central Dashboard)
 - Shows submission status for all locations.
 - Orders are expected daily but can be missing for specific locations or ad hoc days.
- - Missing = locations active in current season with no order for the date.
+- Missing = locations active in current season with no order for the date.
 - Two views:
   - Aggregate totals for the day (per item, per meal)
   - Per-location orders
 - Actions:
-  - Export aggregated order (CSV/PDF) and email
-  - Export per-location orders (CSV/PDF) and email
-  - Optional: "Send & Lock" action to email exports and lock orders for the date
+  - Export aggregated order (CSV/PDF)
+  - Export per-location orders (CSV/PDF)
+  - Email orders per location (one email per location)
+  - Optional: lock a single location or lock all for the date
   - Flag missing or late submissions
 
 ### 4. Locations (Directory / Phone Book)

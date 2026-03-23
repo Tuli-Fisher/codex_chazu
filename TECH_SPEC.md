@@ -190,3 +190,9 @@
 - Use Vitest for frontend and backend unit/integration tests.
 - Add E2E tests (Playwright) for the core happy path and one critical edge case once UI stabilizes.
 
+## Implementation Notes (2026-03-23)
+- Initialized npm workspaces with `apps/web` (Vite React + TypeScript), `apps/api` (Express + TypeScript via `tsx`), and `packages/shared` (shared TS types).
+- Added a shared TypeScript base config at `tsconfig.base.json`.
+- Root scripts orchestrate workspace dev/build/typecheck; lint currently targets the web app.
+- Stubbed the admin frontend shell with React Router, a simple localStorage-backed mock login, and placeholder pages for all MVP routes.
+
