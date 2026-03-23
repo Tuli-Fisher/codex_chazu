@@ -200,6 +200,7 @@
 - Renamed the second meal from supper to lunch across specs, mock data, and UI labels.
 - Rebuilt the Donations page with a central donors table and expandable donation log rows.
 - Reshaped Today Setup into a two-panel workflow with per-meal tables, a basics library, and timing controls.
+- Split Donations into donor and donation-log tabs for clarity.
 - Implemented mock data for Orders Today, including per-location order entry, missing/late flags, and email/lock actions.
 - Added mock Express endpoints for core resources (auth, menus, orders, locations, fundraising, donations, participants).
 

@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { createSearchParams, Link, useSearchParams } from "react-router-dom";
 import { PageHeader } from "../ui/PageHeader";
 import {
   donations,
@@ -24,6 +24,7 @@ function formatDate(value: string) {
 export function Donations() {
   const [searchParams] = useSearchParams();
   const locationId = searchParams.get("location");
+  const activeTab = searchParams.get("tab") ?? "donors";
   const location = locationId ? getLocationById(locationId) : null;
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
@@ -79,6 +80,12 @@ export function Donations() {
   const donorCols = "1.4fr 1.6fr 0.9fr 0.9fr";
   const donationCols = "1.4fr 1.5fr 0.9fr 0.9fr 0.8fr 0.6fr";
 
+  const tabLink = (tab: string) =>
+    `?${createSearchParams({
+      location: locationId ?? "",
+      tab,
+    }).toString()}`;
+
   return (
     <div className="stack">
       <PageHeader
@@ -98,6 +105,21 @@ export function Donations() {
           ) : undefined
         }
       />
+
+      <div className="tabs">
+        <Link
+          className={activeTab === "donors" ? "tab active" : "tab"}
+          to={tabLink("donors")}
+        >
+          Donors
+        </Link>
+        <Link
+          className={activeTab === "log" ? "tab active" : "tab"}
+          to={tabLink("log")}
+        >
+          Donation log
+        </Link>
+      </div>
 
       <div className="toolbar panel">
         <label className="field compact">
@@ -123,7 +145,7 @@ export function Donations() {
         </button>
       </div>
 
-      <div className="grid grid-2">
+      {activeTab === "donors" ? (
         <section className="panel">
           <div className="card-head">
             <h2>Central donors</h2>
@@ -149,7 +171,9 @@ export function Donations() {
             ))}
           </div>
         </section>
+      ) : null}
 
+      {activeTab === "log" ? (
         <section className="panel">
           <div className="card-head">
             <h2>Donation log</h2>
@@ -203,7 +227,7 @@ export function Donations() {
             })}
           </div>
         </section>
-      </div>
+      ) : null}
     </div>
   );
 }
