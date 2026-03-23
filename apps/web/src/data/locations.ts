@@ -23,6 +23,23 @@ export type LocationRecord = {
   fundraisingRaised: number;
 };
 
+export type DonorRecord = {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string;
+};
+
+export type DonationRecord = {
+  id: string;
+  donorId: string;
+  locationId: string | null;
+  amount: number;
+  date: string;
+  method: "check" | "pledge" | "cash";
+  note?: string;
+};
+
 export const locations: LocationRecord[] = [
   {
     id: "riverside",
@@ -118,27 +135,103 @@ export const locations: LocationRecord[] = [
   },
 ];
 
-export const donationsByLocation: Record<
-  string,
-  { donor: string; amount: string; date: string; note?: string }[]
-> = {
-  riverside: [
-    { donor: "Lydia Ross", amount: "$250", date: "Mar 20" },
-    { donor: "Darren Cook", amount: "$100", date: "Mar 18" },
-    { donor: "K. Patel", amount: "$500", date: "Mar 12" },
-  ],
-  "northside-ms": [
-    { donor: "M. Hernandez", amount: "$300", date: "Mar 19" },
-    { donor: "City PTA", amount: "$1,200", date: "Mar 10" },
-  ],
-  "oak-hill": [
-    { donor: "Community Fund", amount: "$900", date: "Mar 05" },
-  ],
-  southridge: [
-    { donor: "R. Coleman", amount: "$150", date: "Mar 17" },
-    { donor: "Neighborhood Assoc.", amount: "$400", date: "Mar 08" },
-  ],
-};
+export const donors: DonorRecord[] = [
+  {
+    id: "donor-1",
+    name: "Lydia Ross",
+    email: "lydia.ross@example.org",
+    phone: "(555) 201-3321",
+  },
+  {
+    id: "donor-2",
+    name: "Darren Cook",
+    email: "d.cook@example.org",
+    phone: "(555) 201-4410",
+  },
+  {
+    id: "donor-3",
+    name: "K. Patel",
+    email: "k.patel@example.org",
+  },
+  {
+    id: "donor-4",
+    name: "City PTA",
+    email: "pta@example.org",
+  },
+  {
+    id: "donor-5",
+    name: "Community Fund",
+    email: "fund@example.org",
+  },
+  {
+    id: "donor-6",
+    name: "Neighborhood Assoc.",
+    email: "neighborhood@example.org",
+  },
+];
+
+export const donations: DonationRecord[] = [
+  {
+    id: "donation-1",
+    donorId: "donor-1",
+    locationId: "riverside",
+    amount: 250,
+    date: "2026-03-20",
+    method: "check",
+    note: "Breakfast program support",
+  },
+  {
+    id: "donation-2",
+    donorId: "donor-2",
+    locationId: "riverside",
+    amount: 100,
+    date: "2026-03-18",
+    method: "pledge",
+  },
+  {
+    id: "donation-3",
+    donorId: "donor-3",
+    locationId: "riverside",
+    amount: 500,
+    date: "2026-03-12",
+    method: "check",
+  },
+  {
+    id: "donation-4",
+    donorId: "donor-4",
+    locationId: "northside-ms",
+    amount: 1200,
+    date: "2026-03-10",
+    method: "check",
+    note: "PTA spring drive",
+  },
+  {
+    id: "donation-5",
+    donorId: "donor-5",
+    locationId: "oak-hill",
+    amount: 900,
+    date: "2026-03-05",
+    method: "pledge",
+  },
+  {
+    id: "donation-6",
+    donorId: "donor-6",
+    locationId: "southridge",
+    amount: 400,
+    date: "2026-03-08",
+    method: "cash",
+    note: "Community match",
+  },
+  {
+    id: "donation-7",
+    donorId: "donor-2",
+    locationId: null,
+    amount: 150,
+    date: "2026-03-21",
+    method: "pledge",
+    note: "General fund",
+  },
+];
 
 export const orderHistoryByLocation: Record<
   string,
@@ -166,4 +259,12 @@ export const orderHistoryByLocation: Record<
 
 export function getLocationById(id: string) {
   return locations.find((location) => location.id === id) ?? null;
+}
+
+export function getDonorById(id: string) {
+  return donors.find((donor) => donor.id === id) ?? null;
+}
+
+export function getDonationsForLocation(locationId: string) {
+  return donations.filter((donation) => donation.locationId === locationId);
 }

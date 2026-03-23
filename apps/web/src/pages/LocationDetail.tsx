@@ -1,7 +1,8 @@
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { PageHeader } from "../ui/PageHeader";
 import {
-  donationsByLocation,
+  getDonationsForLocation,
+  getDonorById,
   getLocationById,
   orderHistoryByLocation,
 } from "../data/locations";
@@ -35,7 +36,15 @@ export function LocationDetail() {
     );
   }
 
-  const donationRows = donationsByLocation[location.id] ?? [];
+  const donationRows = getDonationsForLocation(location.id).map((donation) => {
+    const donor = getDonorById(donation.donorId);
+    return {
+      id: donation.id,
+      donor: donor?.name ?? "Unknown donor",
+      amount: `$${donation.amount.toLocaleString()}`,
+      date: donation.date,
+    };
+  });
   const historyRows = orderHistoryByLocation[location.id] ?? [];
   const historyCols = "1.2fr 1fr 1fr 1fr";
   const donationCols = "1.6fr 1fr 1fr";
@@ -247,7 +256,7 @@ export function LocationDetail() {
                 <div>Date</div>
               </div>
               {donationRows.map((row) => (
-                <div key={row.donor} className="data-row" style={{ "--cols": donationCols } as React.CSSProperties}>
+                <div key={row.id} className="data-row" style={{ "--cols": donationCols } as React.CSSProperties}>
                   <div>{row.donor}</div>
                   <div>{row.amount}</div>
                   <div>{row.date}</div>
