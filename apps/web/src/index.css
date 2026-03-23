@@ -1,20 +1,22 @@
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
 
 :root {
-  --bg: #f5f5f5;
-  --card: #ffffff;
-  --ink: #111827;
-  --muted: #6b7280;
-  --border: #e5e7eb;
-  --brand: #1f4ea3;
-  --brand-strong: #1e3a8a;
-  --accent: #0f766e;
-  --accent-soft: #d1fae5;
+  --bg: #f6f2eb;
+  --bg-deep: #efe8dc;
+  --card: #fffaf2;
+  --ink: #1f1d1a;
+  --muted: #5f5a52;
+  --border: #d7cfc2;
+  --brand: #0f766e;
+  --brand-strong: #0b4a45;
+  --accent: #d97706;
+  --accent-soft: #fde6c6;
   --warning: #b45309;
-  --shadow: none;
-  --radius: 10px;
-  --radius-sm: 8px;
-  --font-body: "IBM Plex Sans", "Helvetica Neue", sans-serif;
+  --shadow: 0 18px 40px rgba(31, 29, 26, 0.12);
+  --radius: 16px;
+  --radius-sm: 12px;
+  --font-body: "IBM Plex Sans", "Work Sans", "Helvetica Neue", sans-serif;
+  --font-display: "Fraunces", "Georgia", serif;
   color-scheme: light;
   font-family: var(--font-body);
   line-height: 1.5;
@@ -29,8 +31,24 @@
 body {
   margin: 0;
   color: var(--ink);
-  background: var(--bg);
+  background:
+    radial-gradient(circle at top left, rgba(15, 118, 110, 0.12), transparent 45%),
+    radial-gradient(circle at 20% 80%, rgba(217, 119, 6, 0.16), transparent 50%),
+    linear-gradient(120deg, var(--bg), var(--bg-deep));
   min-height: 100vh;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(31, 29, 26, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(31, 29, 26, 0.04) 1px, transparent 1px);
+  background-size: 32px 32px;
+  opacity: 0.5;
+  z-index: -1;
 }
 
 #root {
@@ -52,12 +70,14 @@ textarea {
 
 h1,
 h2 {
+  font-family: var(--font-display);
   font-weight: 600;
   margin: 0;
 }
 
 h1 {
-  font-size: clamp(2rem, 2.6vw, 2.4rem);
+  font-size: clamp(2rem, 2.6vw, 2.6rem);
+  letter-spacing: -0.02em;
 }
 
 h2 {
@@ -71,7 +91,7 @@ h2 {
 }
 
 .sidebar {
-  background: #f9fafb;
+  background: linear-gradient(180deg, rgba(15, 118, 110, 0.12), rgba(255, 255, 255, 0.65));
   border-right: 1px solid var(--border);
   padding: 28px 20px;
   display: flex;
@@ -99,12 +119,13 @@ h2 {
   padding: 10px 12px;
   border-radius: 10px;
   color: var(--muted);
-  transition: background 0.2s ease, color 0.2s ease;
+  transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease;
 }
 
 .nav-link:hover {
   background: rgba(15, 118, 110, 0.12);
   color: var(--brand-strong);
+  transform: translateX(2px);
 }
 
 .nav-link.active {
@@ -131,7 +152,8 @@ h2 {
   justify-content: space-between;
   padding: 20px 32px;
   border-bottom: 1px solid var(--border);
-  background: #ffffff;
+  background: rgba(255, 250, 242, 0.75);
+  backdrop-filter: blur(10px);
 }
 
 .topbar-left {
@@ -153,6 +175,7 @@ h2 {
 
 .page {
   padding: 32px;
+  animation: fadeUp 0.5s ease;
 }
 
 .page-head {
@@ -206,6 +229,14 @@ h2 {
   text-align: center;
 }
 
+.panel {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 16px;
+  box-shadow: none;
+}
+
 .card-head {
   display: flex;
   justify-content: space-between;
@@ -250,13 +281,66 @@ h2 {
   background: rgba(255, 255, 255, 0.7);
 }
 
-.table-row.four {
-  grid-template-columns: 2fr 1fr 1fr 1.5fr;
-}
-
 .table-row.table-head {
   font-weight: 600;
-  background: #f3f4f6;
+  background: rgba(15, 118, 110, 0.12);
+}
+
+.data-table {
+  display: grid;
+  gap: 2px;
+}
+
+.data-row {
+  display: grid;
+  grid-template-columns: 2.2fr 0.8fr 0.9fr 1.4fr 1fr 1.2fr 0.8fr;
+  gap: 12px;
+  padding: 12px;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+}
+
+.data-row.header {
+  font-weight: 600;
+  background: rgba(15, 118, 110, 0.08);
+  border-radius: var(--radius-sm);
+  border-bottom: 1px solid var(--border);
+}
+
+.data-row:last-child {
+  border-bottom: none;
+}
+
+.data-row:not(.header):hover {
+  background: rgba(15, 118, 110, 0.06);
+}
+
+.toolbar {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr auto;
+  gap: 12px;
+  align-items: end;
+}
+
+.tabs {
+  display: flex;
+  gap: 12px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 6px;
+}
+
+.tab {
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(15, 118, 110, 0.08);
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.tab.active {
+  background: rgba(15, 118, 110, 0.18);
+  color: var(--brand-strong);
+  font-weight: 600;
 }
 
 .pill-row {
@@ -271,7 +355,7 @@ h2 {
   gap: 6px;
   padding: 6px 12px;
   border-radius: 999px;
-  background: #e0e7ff;
+  background: rgba(15, 118, 110, 0.14);
   color: var(--brand-strong);
   font-size: 0.85rem;
   font-weight: 600;
@@ -311,11 +395,12 @@ h2 {
   border-radius: 999px;
   background: #fff;
   cursor: pointer;
-  transition: border 0.2s ease;
+  transition: transform 0.2s ease, border 0.2s ease, box-shadow 0.2s ease;
 }
 
 .button:hover {
-  border-color: #cbd5f5;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(31, 29, 26, 0.15);
 }
 
 .button.primary {
@@ -399,7 +484,8 @@ h2 {
   position: relative;
   min-height: 220px;
   border-radius: var(--radius);
-  background: #f3f4f6;
+  background:
+    linear-gradient(135deg, rgba(15, 118, 110, 0.08), rgba(217, 119, 6, 0.08));
   display: grid;
   align-items: center;
   justify-items: center;
@@ -480,7 +566,36 @@ h2 {
 }
 
 .stagger > * {
-  animation: none;
+  animation: floatIn 0.6s ease both;
+  animation-delay: calc(var(--i, 0) * 0.08s);
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes floatIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 1200px) {
+  .data-row {
+    grid-template-columns: 2fr 0.9fr 0.9fr 1.3fr 1fr 1.1fr 0.8fr;
+  }
 }
 
 @media (max-width: 1100px) {
@@ -489,6 +604,9 @@ h2 {
   }
   .form-grid,
   .filter-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .toolbar {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
@@ -524,8 +642,18 @@ h2 {
   }
 
   .form-grid,
-  .filter-row {
+  .filter-row,
+  .toolbar {
     grid-template-columns: 1fr;
+  }
+
+  .data-row {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .data-row.header {
+    display: none;
   }
 
   .login-shell {

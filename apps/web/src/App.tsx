@@ -3,6 +3,7 @@ import { AppLayout } from "./app/AppLayout";
 import { RequireAuth } from "./app/RequireAuth";
 import { Donations } from "./pages/Donations";
 import { History } from "./pages/History";
+import { LocationDetail } from "./pages/LocationDetail";
 import { Locations } from "./pages/Locations";
 import { Login } from "./pages/Login";
 import { NotFound } from "./pages/NotFound";
@@ -21,6 +22,7 @@ function App() {
           <Route path="/today" element={<TodaySetup />} />
           <Route path="/orders" element={<OrdersToday />} />
           <Route path="/locations" element={<Locations />} />
+          <Route path="/locations/:locationId" element={<LocationDetail />} />
           <Route path="/history" element={<History />} />
           <Route path="/donations" element={<Donations />} />
           <Route path="/sms" element={<Sms />} />

@@ -195,4 +195,6 @@
 - Added a shared TypeScript base config at `tsconfig.base.json`.
 - Root scripts orchestrate workspace dev/build/typecheck; lint currently targets the web app.
 - Stubbed the admin frontend shell with React Router, a simple localStorage-backed mock login, and placeholder pages for all MVP routes.
+- Reworked the Locations UI into a productivity grid, added `/locations/:locationId` detail tabs (overview/history/donations), and wired location filters for History/Donations via query string.
+- Implemented mock data for Orders Today, including per-location order entry, missing/late flags, and email/lock actions.
 

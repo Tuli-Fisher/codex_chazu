@@ -1,6 +1,12 @@
 import { PageHeader } from "../ui/PageHeader";
+import { useSearchParams } from "react-router-dom";
+import { getLocationById } from "../data/locations";
 
 export function History() {
+  const [searchParams] = useSearchParams();
+  const locationId = searchParams.get("location");
+  const location = locationId ? getLocationById(locationId) : null;
+
   return (
     <div className="stack">
       <PageHeader
@@ -11,6 +17,13 @@ export function History() {
             <button className="button">Export report</button>
             <button className="button ghost">Compare seasons</button>
           </div>
+        }
+        meta={
+          location ? (
+            <div className="meta-row">
+              <span className="pill">Filtered: {location.name}</span>
+            </div>
+          ) : undefined
         }
       />
 

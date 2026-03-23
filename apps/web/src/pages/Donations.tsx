@@ -1,4 +1,6 @@
 import { PageHeader } from "../ui/PageHeader";
+import { useSearchParams } from "react-router-dom";
+import { getLocationById } from "../data/locations";
 
 const donations = [
   { donor: "Lydia Ross", amount: "$250", date: "Mar 20" },
@@ -7,12 +9,23 @@ const donations = [
 ];
 
 export function Donations() {
+  const [searchParams] = useSearchParams();
+  const locationId = searchParams.get("location");
+  const location = locationId ? getLocationById(locationId) : null;
+
   return (
     <div className="stack">
       <PageHeader
         title="Donations"
         description="Log pledges and track fundraising support by season or location."
         actions={<button className="button primary">Add donation</button>}
+        meta={
+          location ? (
+            <div className="meta-row">
+              <span className="pill">Filtered: {location.name}</span>
+            </div>
+          ) : undefined
+        }
       />
 
       <div className="grid grid-2">

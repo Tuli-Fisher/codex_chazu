@@ -12,20 +12,31 @@ const locationRows = [
     name: "Riverside Community Center",
     status: "Submitted",
     updatedAt: "1:10 PM",
-    late: false,
+    isMissing: false,
+    isLate: false,
   },
   {
     name: "Northside Middle School",
     status: "Missing",
     updatedAt: "—",
-    late: false,
+    isMissing: true,
+    isLate: false,
   },
   {
     name: "Oak Hill Library",
-    status: "Submitted",
+    status: "Late",
     updatedAt: "1:34 PM",
-    late: true,
+    isMissing: false,
+    isLate: true,
   },
+];
+
+const orderItems = [
+  { item: "Bagels", meal: "Breakfast", unit: "dozen", qty: 6 },
+  { item: "Cream cheese", meal: "Breakfast", unit: "tubs", qty: 10 },
+  { item: "Yogurt cups", meal: "Breakfast", unit: "cases", qty: 2 },
+  { item: "Chicken chili", meal: "Supper", unit: "pans", qty: 3 },
+  { item: "Cornbread", meal: "Supper", unit: "loaves", qty: 4 },
 ];
 
 export function OrdersToday() {
@@ -64,6 +75,52 @@ export function OrdersToday() {
           <div className="muted">Need follow-up</div>
         </div>
       </div>
+
+      <section className="card">
+        <div className="card-head">
+          <h2>Enter a location order</h2>
+          <div className="button-row">
+            <button className="button">Mark submitted</button>
+            <button className="button primary">Save order</button>
+          </div>
+        </div>
+        <div className="form-grid">
+          <label className="field">
+            <span>Location</span>
+            <select defaultValue="Riverside Community Center">
+              <option>Riverside Community Center</option>
+              <option>Northside Middle School</option>
+              <option>Oak Hill Library</option>
+            </select>
+          </label>
+          <div className="field">
+            <span>Status</span>
+            <span className="pill subtle">Draft</span>
+          </div>
+          <label className="field">
+            <span>Last update</span>
+            <input type="text" defaultValue="1:10 PM" />
+          </label>
+        </div>
+        <div className="table">
+          <div className="table-row table-head four">
+            <div>Item</div>
+            <div>Meal</div>
+            <div>Unit</div>
+            <div>Qty</div>
+          </div>
+          {orderItems.map((row) => (
+            <div key={row.item} className="table-row four">
+              <div>{row.item}</div>
+              <div className="muted">{row.meal}</div>
+              <div className="muted">{row.unit}</div>
+              <div>
+                <input className="table-input" type="number" defaultValue={row.qty} />
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
 
       <section className="card">
         <div className="card-head">
@@ -110,7 +167,11 @@ export function OrdersToday() {
           {locationRows.map((row) => (
             <div key={row.name} className="table-row four">
               <div>{row.name}</div>
-              <div className={row.late ? "pill warning" : "pill subtle"}>
+              <div
+                className={
+                  row.isMissing || row.isLate ? "pill warning" : "pill subtle"
+                }
+              >
                 {row.status}
               </div>
               <div className="muted">{row.updatedAt}</div>
@@ -129,6 +190,3 @@ export function OrdersToday() {
     </div>
   );
 }
-
-
-

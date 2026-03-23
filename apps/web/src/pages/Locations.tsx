@@ -1,77 +1,89 @@
+import { Link } from "react-router-dom";
 import { PageHeader } from "../ui/PageHeader";
-
-const locations = [
-  {
-    name: "Riverside Community Center",
-    status: "Active",
-    contact: "Taylor Lee",
-    phone: "(555) 212-8871",
-  },
-  {
-    name: "Northside Middle School",
-    status: "Active",
-    contact: "Jordan Smith",
-    phone: "(555) 220-4459",
-  },
-  {
-    name: "Oak Hill Library",
-    status: "Seasonal",
-    contact: "Riley Patel",
-    phone: "(555) 310-9022",
-  },
-];
+import { locations } from "../data/locations";
 
 export function Locations() {
   return (
     <div className="stack">
       <PageHeader
         title="Locations"
-        description="Directory of active meal sites, contacts, and participation snapshots."
+        description="Search and manage active meal sites. Open a location to view contacts, fundraising, and history."
         actions={
           <div className="button-row">
-            <button className="button">Filter</button>
+            <button className="button">Export</button>
             <button className="button primary">Add location</button>
           </div>
         }
       />
 
-      <div className="grid grid-3 stagger">
-        {locations.map((location, index) => (
-          <section
-            key={location.name}
-            className="card"
-            style={{ "--i": index } as React.CSSProperties}
-          >
-            <div className="card-head">
-              <h2>{location.name}</h2>
-              <span className="pill subtle">{location.status}</span>
-            </div>
-            <div className="list">
-              <div className="list-item compact">
-                <div>
-                  <div className="muted">Primary contact</div>
-                  <div className="item-title">{location.contact}</div>
-                </div>
-              </div>
-              <div className="list-item compact">
-                <div>
-                  <div className="muted">Phone</div>
-                  <div className="item-title">{location.phone}</div>
-                </div>
-              </div>
-              <div className="list-item compact">
-                <div>
-                  <div className="muted">Weekly participants</div>
-                  <div className="item-title">310 avg</div>
-                </div>
-              </div>
-            </div>
-            <button className="button ghost" type="button">
-              View location
-            </button>
-          </section>
-        ))}
+      <div className="toolbar panel">
+        <label className="field compact">
+          <span>Search</span>
+          <input type="text" placeholder="Search by name or city" />
+        </label>
+        <label className="field compact">
+          <span>Status</span>
+          <select defaultValue="All">
+            <option>All</option>
+            <option>Active</option>
+            <option>Seasonal</option>
+            <option>Inactive</option>
+          </select>
+        </label>
+        <label className="field compact">
+          <span>Season</span>
+          <select defaultValue="Spring 2026">
+            <option>Spring 2026</option>
+            <option>Winter 2025</option>
+            <option>Fall 2025</option>
+          </select>
+        </label>
+        <button className="button ghost" type="button">
+          Clear filters
+        </button>
       </div>
+
+      <section className="panel">
+        <div className="data-table">
+          <div className="data-row header">
+            <div>Location</div>
+            <div>Status</div>
+            <div>Type</div>
+            <div>Primary contact</div>
+            <div>Weekly participants</div>
+            <div>Fundraising</div>
+            <div>Action</div>
+          </div>
+          {locations.map((location) => (
+            <div key={location.id} className="data-row">
+              <div>
+                <div className="item-title">{location.name}</div>
+                <div className="muted">
+                  {location.address.city}, {location.address.state}
+                </div>
+              </div>
+              <div>
+                <span className="pill subtle">{location.status}</span>
+              </div>
+              <div>{location.type}</div>
+              <div>
+                <div>{location.contact.name}</div>
+                <div className="muted">{location.contact.phone}</div>
+              </div>
+              <div>{location.weeklyParticipants}</div>
+              <div>
+                ${location.fundraisingRaised.toLocaleString()} / $
+                {location.fundraisingTarget.toLocaleString()}
+              </div>
+              <div>
+                <Link className="button ghost" to={`/locations/${location.id}`}>
+                  Open
+                </Link>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
     </div>
   );
 }
