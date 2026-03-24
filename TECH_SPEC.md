@@ -200,9 +200,12 @@
 - Renamed the second meal from supper to lunch across specs, mock data, and UI labels.
 - Rebuilt the Donations page with a central donors table and expandable donation log rows.
 - Reshaped Today Setup into a two-panel workflow with per-meal tables, a basics library, and timing controls.
+- Simplified `/today` and renamed the page label to "Todays Menu", showing only item name and today's availability.
 - Split Donations into donor and donation-log tabs for clarity.
 - Added a per-location submissions grid for Orders Today with separate breakfast/lunch statuses and actions.
 - Reworked History with filters, summary panel, and item/location/date drilldown tabs.
+- Added Vitest-based test suites for web UI and API endpoints.
+- Expanded UI coverage across all core pages, added shared test helpers, and broadened API route assertions for orders, locations, donations, and participants.
 - Implemented mock data for Orders Today, including per-location order entry, missing/late flags, and email/lock actions.
 - Added mock Express endpoints for core resources (auth, menus, orders, locations, fundraising, donations, participants).
 - Made location directory rows keyboard- and mouse-clickable to open `/locations/:locationId`, in addition to the row action button.

@@ -13,6 +13,8 @@
     "build:web:vercel": "npm -w apps/web run build:vercel",
     "build": "npm run --workspaces build",
     "preview": "npm -w apps/web run preview",
+    "test": "npm run --workspaces --if-present test",
+    "test:watch": "npm run --workspaces --if-present test:watch",
     "typecheck": "npm run --workspaces typecheck",
     "lint": "npm -w apps/web run lint"
   },
