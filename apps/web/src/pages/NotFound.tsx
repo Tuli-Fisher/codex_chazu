@@ -11,7 +11,7 @@ export function NotFound() {
           continue.
         </p>
         <Link className="button primary" to="/today">
-          Back to Today Setup
+          Back to Todays Menu
         </Link>
       </div>
     </div>

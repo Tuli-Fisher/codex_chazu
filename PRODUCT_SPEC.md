@@ -31,7 +31,7 @@ Build an admin-only web system to manage seasonal meal logistics across multiple
 ### 1. Admin Login
 - Simple admin authentication.
 
-### 2. Today Setup (Daily Menu Builder)
+### 2. Todays Menu (Daily Menu Builder)
 - Admin sets the list of items available today for breakfast and lunch.
 - Items can be:
   - Custom ad hoc entries, and
@@ -42,7 +42,7 @@ Build an admin-only web system to manage seasonal meal logistics across multiple
   - Notes (e.g., brand preference)
   - Cutoff time for orders (used by SMS later; not enforced for admin entry)
 - Menu applies to all locations for that day.
-- Today Setup loads the existing menu for that date (if any). Edits apply immediately to that date’s menu.
+- Todays Menu loads the existing menu for that date (if any). Edits apply immediately to that date’s menu.
 - Action: apply a basic template (no automatic copy-forward).
 - Menu edits after orders exist:
   - Orders remain editable after submit.
@@ -109,7 +109,7 @@ Build an admin-only web system to manage seasonal meal logistics across multiple
 
 ### 9. Admin Settings
 - Set a default daily order lock time (applies to new dates).
-- Allow per-date override of lock time in Today Setup.
+- Allow per-date override of lock time in Todays Menu.
 
 ## Data Requirements (Product-Level)
 - Daily Menu per date and meal (breakfast/lunch).
@@ -124,7 +124,7 @@ Build an admin-only web system to manage seasonal meal logistics across multiple
 ## Workflows
 
 ### Daily Menu Setup
-1. Admin opens Today Setup.
+1. Admin opens Todays Menu.
 2. Selects or enters available items for breakfast and lunch (no automatic copy-forward).
 3. Saves menu and sets cutoff times if desired.
 
