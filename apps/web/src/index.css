@@ -60,6 +60,14 @@ a {
   text-decoration: none;
 }
 
+.inline-link {
+  color: var(--brand-strong);
+}
+
+.inline-link:hover {
+  text-decoration: underline;
+}
+
 button,
 input,
 select,
