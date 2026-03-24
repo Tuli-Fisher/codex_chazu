@@ -445,6 +445,13 @@ h2 {
   box-shadow: 0 8px 20px rgba(31, 29, 26, 0.15);
 }
 
+.button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
 .button.primary {
   background: var(--brand);
   border-color: var(--brand);

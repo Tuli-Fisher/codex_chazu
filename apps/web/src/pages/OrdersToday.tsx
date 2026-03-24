@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { PageHeader } from "../ui/PageHeader";
 
@@ -87,6 +88,10 @@ function statusPill(status: MealStatus) {
 
 export function OrdersToday() {
   const perLocationCols = "2fr 1fr 1fr 1fr 1.2fr 1.5fr";
+  const [missingOnly, setMissingOnly] = useState(false);
+  const [remindedIds, setRemindedIds] = useState<Set<string>>(new Set());
+  const [lockedIds, setLockedIds] = useState<Set<string>>(new Set());
+  const [lastAction, setLastAction] = useState<string | null>(null);
 
   const breakfastSubmitted = submissions.filter(
     (row) => row.breakfast === "submitted" || row.breakfast === "late",
@@ -101,6 +106,44 @@ export function OrdersToday() {
     (row) => row.breakfast === "late" || row.lunch === "late",
   ).length;
 
+  const filteredSubmissions = missingOnly
+    ? submissions.filter(
+        (row) => row.breakfast === "missing" || row.lunch === "missing",
+      )
+    : submissions;
+
+  const markReminded = (ids: string[], summary: string) => {
+    setRemindedIds((prev) => {
+      const next = new Set(prev);
+      ids.forEach((id) => next.add(id));
+      return next;
+    });
+    setLastAction(summary);
+  };
+
+  const toggleLock = (id: string, name: string) => {
+    setLockedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+        setLastAction(`${name} unlocked`);
+      } else {
+        next.add(id);
+        setLastAction(`${name} locked`);
+      }
+      return next;
+    });
+  };
+
+  const lockAll = () => {
+    setLockedIds(new Set(submissions.map((row) => row.id)));
+    setLastAction("All locations locked for today");
+  };
+
+  const exportMessage = (label: string) => {
+    setLastAction(`${label} export prepared (mock)`);
+  };
+
   return (
     <div className="stack">
       <PageHeader
@@ -108,10 +151,18 @@ export function OrdersToday() {
         description="Breakfast and supper orders are collected separately. Each location can submit one or both."
         actions={
           <div className="button-row">
-            <button className="button">Export breakfast</button>
-            <button className="button">Export supper</button>
-            <button className="button">Export by location</button>
-            <button className="button primary">Send and lock</button>
+            <button className="button" type="button" onClick={() => exportMessage("Breakfast totals")}>
+              Export breakfast
+            </button>
+            <button className="button" type="button" onClick={() => exportMessage("Supper totals")}>
+              Export supper
+            </button>
+            <button className="button" type="button" onClick={() => exportMessage("Per-location orders")}>
+              Export by location
+            </button>
+            <button className="button primary" type="button" onClick={lockAll}>
+              Send and lock
+            </button>
           </div>
         }
         meta={
@@ -120,6 +171,10 @@ export function OrdersToday() {
             <span className="pill">Supper: {lunchSubmitted} submitted</span>
             <span className="pill warning">{missingEither} missing</span>
             <span className="pill warning">{lateCount} late</span>
+            {missingOnly ? (
+              <span className="pill subtle">Showing missing only</span>
+            ) : null}
+            {lastAction ? <span className="pill subtle">{lastAction}</span> : null}
           </div>
         }
       />
@@ -144,56 +199,100 @@ export function OrdersToday() {
       </div>
 
       <section className="panel">
-        <div className="card-head">
-          <div>
-            <h2>Per-location submissions</h2>
-            <div className="muted">
-              Breakfast cutoff 7:15 AM | Supper cutoff 11:00 AM
-            </div>
-          </div>
-          <div className="button-row">
-            <button className="button ghost" type="button">
-              Show missing only
-            </button>
-            <button className="button ghost" type="button">
-              Send reminders
-            </button>
-          </div>
-        </div>
-        <div className="data-table">
-          <div className="data-row header" style={{ "--cols": perLocationCols } as React.CSSProperties}>
-            <div>Location</div>
-            <div>Breakfast</div>
-            <div>Supper</div>
-            <div>Last update</div>
-            <div>Contact</div>
-            <div>Actions</div>
-          </div>
-          {submissions.map((row) => (
-            <div key={row.id} className="data-row" style={{ "--cols": perLocationCols } as React.CSSProperties}>
-              <div>
-                <div className="item-title">{row.name}</div>
-                <div className="muted">{row.note}</div>
-              </div>
-              <div>{statusPill(row.breakfast)}</div>
-              <div>{statusPill(row.lunch)}</div>
-              <div>{row.updatedAt}</div>
-              <div className="muted">{row.contact}</div>
-              <div className="button-row">
-                <Link className="button ghost small" to={`/locations/${row.id}?tab=history`}>
-                  View
-                </Link>
-                <button className="button ghost small" type="button">
-                  Reminder
-                </button>
-                <button className="button ghost small" type="button">
-                  Lock
-                </button>
+          <div className="card-head">
+            <div>
+              <h2>Per-location submissions</h2>
+              <div className="muted">
+                Breakfast cutoff 7:15 AM | Supper cutoff 11:00 AM
               </div>
             </div>
-          ))}
-        </div>
-      </section>
+            <div className="button-row">
+              <button
+                className="button ghost"
+                type="button"
+                onClick={() =>
+                  setMissingOnly((prev) => {
+                    const next = !prev;
+                    setLastAction(next ? "Filtered to missing orders" : "Showing all submissions");
+                    return next;
+                  })
+                }
+              >
+                {missingOnly ? "Show all" : "Show missing only"}
+              </button>
+              <button
+                className="button ghost"
+                type="button"
+                onClick={() => {
+                  const needingReminder = submissions.filter(
+                    (row) =>
+                      row.breakfast === "missing" ||
+                      row.breakfast === "late" ||
+                      row.lunch === "missing" ||
+                      row.lunch === "late",
+                  );
+                  markReminded(
+                    needingReminder.map((row) => row.id),
+                    `Reminders sent to ${needingReminder.length} locations`,
+                  );
+                }}
+              >
+                Send reminders
+              </button>
+            </div>
+          </div>
+          <div className="data-table">
+            <div className="data-row header" style={{ "--cols": perLocationCols } as React.CSSProperties}>
+              <div>Location</div>
+              <div>Breakfast</div>
+              <div>Supper</div>
+              <div>Last update</div>
+              <div>Contact</div>
+              <div>Actions</div>
+            </div>
+            {filteredSubmissions.map((row) => {
+              const reminded = remindedIds.has(row.id);
+              const isLocked = lockedIds.has(row.id);
+              return (
+                <div key={row.id} className="data-row" style={{ "--cols": perLocationCols } as React.CSSProperties}>
+                  <div>
+                    <div className="item-title">{row.name}</div>
+                    <div className="muted">{row.note}</div>
+                    {isLocked ? (
+                      <div className="pill-row">
+                        <span className="pill subtle">Locked</span>
+                      </div>
+                    ) : null}
+                  </div>
+                  <div>{statusPill(row.breakfast)}</div>
+                  <div>{statusPill(row.lunch)}</div>
+                  <div>{row.updatedAt}</div>
+                  <div className="muted">{row.contact}</div>
+                  <div className="button-row">
+                    <Link className="button ghost small" to={`/locations/${row.id}?tab=history`}>
+                      View
+                    </Link>
+                    <button
+                      className="button ghost small"
+                      type="button"
+                      onClick={() => markReminded([row.id], `Reminder sent to ${row.name}`)}
+                      disabled={reminded}
+                    >
+                      {reminded ? "Reminder sent" : "Reminder"}
+                    </button>
+                    <button
+                      className="button ghost small"
+                      type="button"
+                      onClick={() => toggleLock(row.id, row.name)}
+                    >
+                      {isLocked ? "Unlock" : "Lock"}
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
 
       <div className="grid grid-2">
         <section className="card">
