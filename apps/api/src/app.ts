@@ -1,6 +1,6 @@
 import express from "express";
 
-type MealType = "breakfast" | "lunch";
+type MealType = "breakfast" | "supper";
 
 type DailyMenuItem = {
   id: string;
@@ -18,6 +18,16 @@ type LocationSummary = {
   phone: string;
 };
 
+type LocationContact = {
+  id: string;
+  locationId: string;
+  name: string;
+  phone: string;
+  email: string;
+  role: string;
+  isPrimary: boolean;
+};
+
 type OrderItem = {
   menuItemId: string;
   name: string;
@@ -32,6 +42,27 @@ type LocationOrder = {
   status: "draft" | "submitted" | "locked" | "missing" | "late";
   updatedAt: string;
   items: OrderItem[];
+};
+
+type Season = {
+  id: string;
+  name: string;
+  startDate: string;
+  endDate: string;
+  isActive: boolean;
+};
+
+type MenuBasic = {
+  id: string;
+  name: string;
+  defaultUnit: string;
+  active: boolean;
+};
+
+type Settings = {
+  lockTime: string;
+  timezone: string;
+  lateThresholdMinutes: number;
 };
 
 export const app = express();
@@ -56,7 +87,7 @@ const todayMenu: DailyMenuItem[] = [
   },
   {
     id: "menu-3",
-    mealType: "lunch",
+    mealType: "supper",
     name: "Chicken chili",
     unit: "pans",
     packSize: "1",
@@ -86,6 +117,65 @@ const locations: LocationSummary[] = [
     phone: "(555) 310-9022",
   },
 ];
+
+const locationContacts: LocationContact[] = [
+  {
+    id: "contact-1",
+    locationId: "loc-1",
+    name: "Taylor Lee",
+    phone: "(555) 212-8871",
+    email: "taylor.lee@example.org",
+    role: "Program Lead",
+    isPrimary: true,
+  },
+  {
+    id: "contact-2",
+    locationId: "loc-1",
+    name: "Maya Chen",
+    phone: "(555) 212-8833",
+    email: "maya.chen@example.org",
+    role: "Operations",
+    isPrimary: false,
+  },
+  {
+    id: "contact-3",
+    locationId: "loc-2",
+    name: "Jordan Smith",
+    phone: "(555) 220-4459",
+    email: "jordan.smith@example.org",
+    role: "Site Coordinator",
+    isPrimary: true,
+  },
+];
+
+const seasons: Season[] = [
+  {
+    id: "season-2026-spring",
+    name: "Spring 2026",
+    startDate: "2026-03-01",
+    endDate: "2026-05-31",
+    isActive: true,
+  },
+  {
+    id: "season-2025-winter",
+    name: "Winter 2025",
+    startDate: "2025-12-01",
+    endDate: "2026-02-28",
+    isActive: false,
+  },
+];
+
+const menuBasics: MenuBasic[] = [
+  { id: "basic-1", name: "Bagels", defaultUnit: "dozen", active: true },
+  { id: "basic-2", name: "Cream cheese", defaultUnit: "tubs", active: true },
+  { id: "basic-3", name: "Granola bars", defaultUnit: "cases", active: true },
+];
+
+let settings: Settings = {
+  lockTime: "16:30",
+  timezone: "America/New_York",
+  lateThresholdMinutes: 30,
+};
 
 const locationOrders: LocationOrder[] = [
   {
@@ -126,7 +216,7 @@ const locationOrders: LocationOrder[] = [
       {
         menuItemId: "menu-3",
         name: "Chicken chili",
-        mealType: "lunch",
+        mealType: "supper",
         unit: "pans",
         quantity: 3,
       },
@@ -137,8 +227,8 @@ const locationOrders: LocationOrder[] = [
 const aggregateTotals = [
   { item: "Bagels", meal: "Breakfast", total: 96 },
   { item: "Yogurt cups", meal: "Breakfast", total: 180 },
-  { item: "Chicken chili", meal: "Lunch", total: 42 },
-  { item: "Cornbread", meal: "Lunch", total: 38 },
+  { item: "Chicken chili", meal: "Supper", total: 42 },
+  { item: "Cornbread", meal: "Supper", total: 38 },
 ];
 
 app.get("/health", (_req, res) => {
@@ -152,6 +242,15 @@ app.post("/auth/login", (req, res) => {
 
 app.post("/auth/logout", (_req, res) => {
   res.json({ ok: true });
+});
+
+app.get("/settings", (_req, res) => {
+  res.json(settings);
+});
+
+app.patch("/settings", (req, res) => {
+  settings = { ...settings, ...(req.body ?? {}) };
+  res.json(settings);
 });
 
 app.get("/locations", (_req, res) => {
@@ -179,6 +278,13 @@ app.get("/locations/:id/orders", (_req, res) => {
   res.json({ items: locationOrders });
 });
 
+app.get("/locations/:id/contacts", (req, res) => {
+  const contacts = locationContacts.filter(
+    (contact) => contact.locationId === req.params.id,
+  );
+  res.json({ items: contacts });
+});
+
 app.get("/locations/:id/fundraising", (_req, res) => {
   res.json({
     targetAmount: 15000,
@@ -196,6 +302,31 @@ app.get("/menus/today", (_req, res) => {
     lockAt: "16:30",
     items: todayMenu,
   });
+});
+
+app.get("/menu-basics", (_req, res) => {
+  res.json({ items: menuBasics });
+});
+
+app.post("/menu-basics", (req, res) => {
+  const next = {
+    id: `basic-${menuBasics.length + 1}`,
+    name: req.body?.name ?? "New item",
+    defaultUnit: req.body?.defaultUnit ?? "unit",
+    active: req.body?.active ?? true,
+  };
+  menuBasics.push(next);
+  res.status(201).json({ item: next });
+});
+
+app.patch("/menu-basics/:id", (req, res) => {
+  const item = menuBasics.find((basic) => basic.id === req.params.id);
+  if (!item) {
+    res.status(404).json({ error: "Basic template not found" });
+    return;
+  }
+  Object.assign(item, req.body ?? {});
+  res.json({ item });
 });
 
 app.post("/menus", (req, res) => {
@@ -258,6 +389,37 @@ app.get("/aggregates", (req, res) => {
     groupBy: req.query.group_by ?? "item",
     items: aggregateTotals,
   });
+});
+
+app.get("/seasons", (_req, res) => {
+  res.json({ items: seasons });
+});
+
+app.get("/seasons/active", (_req, res) => {
+  const active = seasons.find((season) => season.isActive);
+  res.json({ item: active ?? null });
+});
+
+app.post("/seasons", (req, res) => {
+  const next = {
+    id: `season-${seasons.length + 1}`,
+    name: req.body?.name ?? "New season",
+    startDate: req.body?.startDate ?? todayDate,
+    endDate: req.body?.endDate ?? todayDate,
+    isActive: Boolean(req.body?.isActive),
+  };
+  seasons.push(next);
+  res.status(201).json({ item: next });
+});
+
+app.patch("/seasons/:id", (req, res) => {
+  const season = seasons.find((item) => item.id === req.params.id);
+  if (!season) {
+    res.status(404).json({ error: "Season not found" });
+    return;
+  }
+  Object.assign(season, req.body ?? {});
+  res.json({ item: season });
 });
 
 app.post("/fundraising/targets", (req, res) => {

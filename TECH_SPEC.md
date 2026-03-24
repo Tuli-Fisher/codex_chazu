@@ -129,16 +129,24 @@
 - `POST /auth/login`
 - `POST /auth/logout`
 
+### Settings
+- `GET /settings`
+- `PATCH /settings`
+
 ### Locations
 - `GET /locations`
 - `POST /locations`
 - `GET /locations/:id`
 - `PATCH /locations/:id`
 - `GET /locations/:id/orders`
+- `GET /locations/:id/contacts`
 - `GET /locations/:id/fundraising`
 
 ### Menu + Orders
 - `GET /menus/today`
+- `GET /menu-basics`
+- `POST /menu-basics`
+- `PATCH /menu-basics/:id`
 - `POST /menus` (create daily menu)
 - `PATCH /menus/:id` (edit daily menu)
 - `POST /orders` (create location order)
@@ -147,13 +155,18 @@
 - `POST /orders/lock` (lock all orders for a date, after procurement)
 - `POST /orders/:id/lock` (lock a single order)
 - `POST /orders/:id/unlock` (admin-only override)
-### Menu
 - `GET /orders/today/aggregate`
 - `GET /orders/today/by-location` (includes missing locations with null order)
 - `GET /orders/today/export?format=csv|pdf` (file download)
 - `POST /orders/today/email` (send CSV/PDF via email)
 - `GET /orders?season_id=&date_from=&date_to=&location_id=`
 - `GET /aggregates?season_id=&date_from=&date_to=&group_by=item|location|date`
+
+### Seasons
+- `GET /seasons`
+- `GET /seasons/active`
+- `POST /seasons`
+- `PATCH /seasons/:id`
 
 ### Fundraising + Donations
 - `POST /fundraising/targets`
@@ -195,18 +208,10 @@
 - Added a shared TypeScript base config at `tsconfig.base.json`.
 - Root scripts orchestrate workspace dev/build/typecheck; lint currently targets the web app.
 - Stubbed the admin frontend shell with React Router, a simple localStorage-backed mock login, and placeholder pages for all MVP routes.
-- Reworked the Locations UI into a productivity grid, added `/locations/:locationId` detail tabs (overview/history/donations), and wired location filters for History/Donations via query string.
-- Separated Orders Today into breakfast and lunch totals with distinct export actions and missing submission tracking.
-- Renamed the second meal from supper to lunch across specs, mock data, and UI labels.
-- Rebuilt the Donations page with a central donors table and expandable donation log rows.
-- Reshaped Today Setup into a two-panel workflow with per-meal tables, a basics library, and timing controls.
-- Simplified `/today` and renamed the page label to "Todays Menu", showing only item name and today's availability.
-- Split Donations into donor and donation-log tabs for clarity.
-- Added a per-location submissions grid for Orders Today with separate breakfast/lunch statuses and actions.
-- Reworked History with filters, summary panel, and item/location/date drilldown tabs.
-- Added Vitest-based test suites for web UI and API endpoints.
-- Expanded UI coverage across all core pages, added shared test helpers, and broadened API route assertions for orders, locations, donations, and participants.
+- Updated Orders Today with per-location order entry, missing/late flags, and per-location email/lock actions.
+- Renamed Today Setup controls to use "Basic templates" and "Apply basic template".
+- Simplified the UI styling to a flatter, business-first layout.
 - Implemented mock data for Orders Today, including per-location order entry, missing/late flags, and email/lock actions.
 - Added mock Express endpoints for core resources (auth, menus, orders, locations, fundraising, donations, participants).
-- Made location directory rows keyboard- and mouse-clickable to open `/locations/:locationId`, in addition to the row action button.
+- Added endpoints for settings, menu basics templates, seasons, and location contacts.
 
