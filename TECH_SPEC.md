@@ -214,4 +214,5 @@
 - Implemented mock data for Orders Today, including per-location order entry, missing/late flags, and email/lock actions.
 - Added mock Express endpoints for core resources (auth, menus, orders, locations, fundraising, donations, participants).
 - Added endpoints for settings, menu basics templates, seasons, and location contacts.
+- Refactored API into route modules and centralized mock data in `src/data/mockDb.ts`.
 
