@@ -4,7 +4,7 @@
 Build an admin-only web system to manage seasonal meal logistics across multiple locations. The admin defines the daily menu, locations submit orders based on that menu, and the system aggregates totals for procurement. The system also tracks location profiles, fundraising performance, daily/weekly participation, historical data, and accepts donations (pledge tracking only for now).
 
 ## Goals
-- Admin can define what items are available each day for breakfast and lunch.
+- Admin can define what items are available each day for breakfast and supper.
 - Admin can see all location orders in one place and export or send totals as one bulk order or split by location.
 - Admin can manage a location directory with contact info, addresses, program metrics, and fundraising data.
 - Admin can view historical data by date, season, location, or item.
@@ -21,8 +21,8 @@ Build an admin-only web system to manage seasonal meal logistics across multiple
 - Multiple admins can be logged in concurrently.
 
 ## Core Concepts
-- Daily Menu: The admin-defined list of items available for breakfast and lunch on a given date.
-- Order: Each location’s quantities for the day, restricted to the Daily Menu.
+- Daily Menu: The admin-defined list of items available for breakfast and supper on a given date.
+- Order: Each location's quantities for the day, restricted to the Daily Menu.
 - Aggregation: System totals per item and per meal, plus optional per-location breakdown for logistics.
 - Season: A defined window (about 3 months) for program operation. Multiple seasons are stored simultaneously; one is marked active.
 
@@ -32,17 +32,17 @@ Build an admin-only web system to manage seasonal meal logistics across multiple
 - Simple admin authentication.
 
 ### 2. Todays Menu (Daily Menu Builder)
-- Admin sets the list of items available today for breakfast and lunch.
+- Admin sets the list of items available today for breakfast and supper.
 - Items can be:
   - Custom ad hoc entries, and
-  - Selected from a saved “Basic templates” list (global across seasons, to reduce typing/typos).
+  - Selected from a saved "Basic templates" list (global across seasons, to reduce typing/typos).
 - Optional per-item fields:
   - Unit label (e.g., "bagels", "loaves")
   - Pack size (for procurement conversion)
   - Notes (e.g., brand preference)
   - Cutoff time for orders (used by SMS later; not enforced for admin entry)
 - Menu applies to all locations for that day.
-- Todays Menu loads the existing menu for that date (if any). Edits apply immediately to that date’s menu.
+- Todays Menu loads the existing menu for that date (if any). Edits apply immediately to that date's menu.
 - Action: apply a basic template (no automatic copy-forward).
 - Menu edits after orders exist:
   - Orders remain editable after submit.
@@ -68,7 +68,7 @@ Build an admin-only web system to manage seasonal meal logistics across multiple
 - List view with search and filter (active/inactive, season, region if needed).
 - Each location record includes:
   - Name, status, type (school/community)
-  - Contacts (0–2 preferred; stored as separate contact records)
+  - Contacts (0-2 preferred; stored as separate contact records)
   - Address
   - Operational notes (delivery window, pickup notes, special dietary notes)
   - Fundraising target and actuals (admin-adjustable, flexible)
@@ -112,7 +112,7 @@ Build an admin-only web system to manage seasonal meal logistics across multiple
 - Allow per-date override of lock time in Todays Menu.
 
 ## Data Requirements (Product-Level)
-- Daily Menu per date and meal (breakfast/lunch).
+- Daily Menu per date and meal (breakfast/supper).
 - Orders are only allowed for items in the Daily Menu.
 - Aggregation by day, by meal, by item.
 - Location fundraising targets are adjustable and not enforced strictly.
@@ -125,7 +125,7 @@ Build an admin-only web system to manage seasonal meal logistics across multiple
 
 ### Daily Menu Setup
 1. Admin opens Todays Menu.
-2. Selects or enters available items for breakfast and lunch (no automatic copy-forward).
+2. Selects or enters available items for breakfast and supper (no automatic copy-forward).
 3. Saves menu and sets cutoff times if desired.
 
 ### Order Aggregation
@@ -134,7 +134,7 @@ Build an admin-only web system to manage seasonal meal logistics across multiple
 3. Admin exports aggregate order or per-location order lists.
 
 ### Fundraising Tracking
-1. Admin sets or adjusts a location’s fundraising target.
+1. Admin sets or adjusts a location's fundraising target.
 2. Admin logs donations (donor, amount, date).
 3. Location fundraising totals update automatically.
 

@@ -80,7 +80,7 @@
   - `id` (pk), `season_id` (fk), `date`, `lock_at`
 
 - `daily_menu_items`
-  - `id` (pk), `daily_menu_id` (fk), `meal_type` (breakfast|lunch)
+  - `id` (pk), `daily_menu_id` (fk), `meal_type` (breakfast|supper)
   - `item_name`, `unit`, `pack_size`, `notes`, `cutoff_time`
 
 - `orders`
