@@ -255,13 +255,18 @@ export function OrdersToday() {
               const isLocked = lockedIds.has(row.id);
               return (
                 <div key={row.id} className="data-row" style={{ "--cols": perLocationCols } as React.CSSProperties}>
-                  <div>
-                    <div className="item-title">{row.name}</div>
-                    <div className="muted">{row.note}</div>
-                    {isLocked ? (
-                      <div className="pill-row">
-                        <span className="pill subtle">Locked</span>
-                      </div>
+                <div>
+                  <Link
+                    className="item-title inline-link"
+                    to={`/locations/${row.id}?tab=history`}
+                  >
+                    {row.name}
+                  </Link>
+                  <div className="muted">{row.note}</div>
+                  {isLocked ? (
+                    <div className="pill-row">
+                      <span className="pill subtle">Locked</span>
+                    </div>
                     ) : null}
                   </div>
                   <div>{statusPill(row.breakfast)}</div>
