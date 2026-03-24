@@ -215,3 +215,6 @@
 - Added mock Express endpoints for core resources (auth, menus, orders, locations, fundraising, donations, participants).
 - Added endpoints for settings, menu basics templates, seasons, and location contacts.
 
+## Implementation Notes (2026-03-24)
+- Updated Today Setup so admins can add ad hoc menu items directly into "Available menu items" with name/default-meal inputs and duplicate-name validation.
+

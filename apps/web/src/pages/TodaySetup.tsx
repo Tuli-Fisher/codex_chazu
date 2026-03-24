@@ -9,7 +9,7 @@ type MenuItem = {
   defaultMeal: MealLabel;
 };
 
-const menuItems: MenuItem[] = [
+const initialMenuItems: MenuItem[] = [
   { id: "bagels", name: "Bagels", defaultMeal: "Breakfast" },
   { id: "fresh-fruit", name: "Fresh fruit", defaultMeal: "Breakfast" },
   { id: "yogurt-cups", name: "Yogurt cups", defaultMeal: "Breakfast" },
@@ -24,8 +24,6 @@ const menuItems: MenuItem[] = [
   { id: "juice-boxes", name: "Juice boxes", defaultMeal: "Breakfast" },
 ];
 
-const itemsById = Object.fromEntries(menuItems.map((item) => [item.id, item]));
-
 const initialBreakfastIds = ["bagels", "fresh-fruit", "yogurt-cups"];
 const initialSupperIds = ["chicken-chili", "cornbread", "green-salad"];
 const initialAvailableIds = [
@@ -37,10 +35,40 @@ const initialAvailableIds = [
   "juice-boxes",
 ];
 
+function toSlug(value: string) {
+  return value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+function createUniqueItemId(name: string, existingIds: Set<string>) {
+  const base = toSlug(name) || "menu-item";
+  let candidate = base;
+  let suffix = 2;
+
+  while (existingIds.has(candidate)) {
+    candidate = `${base}-${suffix}`;
+    suffix += 1;
+  }
+
+  return candidate;
+}
+
 export function TodaySetup() {
+  const [menuItems, setMenuItems] = useState(initialMenuItems);
   const [breakfastIds, setBreakfastIds] = useState(initialBreakfastIds);
   const [supperIds, setSupperIds] = useState(initialSupperIds);
   const [availableIds, setAvailableIds] = useState(initialAvailableIds);
+  const [isAddMealOpen, setIsAddMealOpen] = useState(false);
+  const [newItemName, setNewItemName] = useState("");
+  const [newItemDefaultMeal, setNewItemDefaultMeal] = useState<MealLabel>("Breakfast");
+  const [newItemError, setNewItemError] = useState("");
+
+  const itemsById = Object.fromEntries(
+    menuItems.map((item) => [item.id, item])
+  ) as Record<string, MenuItem>;
 
   const menuCols = "1.6fr 1fr 0.8fr";
   const availableCols = "1.8fr 1fr 1.2fr";
@@ -66,6 +94,54 @@ export function TodaySetup() {
   const removeFromSupper = (id: string) => {
     setSupperIds((prev) => prev.filter((itemId) => itemId !== id));
     setAvailableIds((prev) => (prev.includes(id) ? prev : [...prev, id]));
+  };
+
+  const addAvailableItem = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const trimmedName = newItemName.trim();
+
+    if (!trimmedName) {
+      setNewItemError("Enter an item name.");
+      return;
+    }
+
+    const alreadyExists = menuItems.some(
+      (item) => item.name.toLowerCase() === trimmedName.toLowerCase()
+    );
+
+    if (alreadyExists) {
+      setNewItemError("That item already exists.");
+      return;
+    }
+
+    const id = createUniqueItemId(
+      trimmedName,
+      new Set(menuItems.map((item) => item.id))
+    );
+    const newItem: MenuItem = {
+      id,
+      name: trimmedName,
+      defaultMeal: newItemDefaultMeal,
+    };
+
+    setMenuItems((prev) => [...prev, newItem]);
+    setAvailableIds((prev) => [...prev, id]);
+    setNewItemName("");
+    setNewItemDefaultMeal("Breakfast");
+    setNewItemError("");
+    setIsAddMealOpen(false);
+  };
+
+  const openAddMealForm = () => {
+    setIsAddMealOpen(true);
+    setNewItemError("");
+  };
+
+  const closeAddMealForm = () => {
+    setIsAddMealOpen(false);
+    setNewItemName("");
+    setNewItemDefaultMeal("Breakfast");
+    setNewItemError("");
   };
 
   return (
@@ -145,7 +221,59 @@ export function TodaySetup() {
             <h2>Available menu items</h2>
             <div className="muted">{availableItems.length} items</div>
           </div>
+          {!isAddMealOpen ? (
+            <button
+              className="button primary small"
+              type="button"
+              onClick={openAddMealForm}
+            >
+              Add meal
+            </button>
+          ) : null}
         </div>
+        {isAddMealOpen ? (
+          <form className="form-grid" onSubmit={addAvailableItem}>
+            <label className="field compact">
+              <span>Item name</span>
+              <input
+                type="text"
+                value={newItemName}
+                onChange={(event) => setNewItemName(event.target.value)}
+                placeholder="Oatmeal cups"
+              />
+            </label>
+            <label className="field compact">
+              <span>Default meal</span>
+              <select
+                value={newItemDefaultMeal}
+                onChange={(event) =>
+                  setNewItemDefaultMeal(event.target.value as MealLabel)
+                }
+              >
+                <option value="Breakfast">Breakfast</option>
+                <option value="Supper">Supper</option>
+              </select>
+            </label>
+            <div className="field compact">
+              <span>Action</span>
+              <div className="button-row">
+                <button className="button primary" type="submit">
+                  Add to available
+                </button>
+                <button
+                  className="button ghost"
+                  type="button"
+                  onClick={closeAddMealForm}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </form>
+        ) : null}
+        {isAddMealOpen && newItemError ? (
+          <div className="form-error">{newItemError}</div>
+        ) : null}
         <div className="data-table">
           <div className="data-row header" style={{ "--cols": availableCols } as React.CSSProperties}>
             <div>Name</div>
