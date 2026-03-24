@@ -71,7 +71,7 @@ export function Donations() {
           email: donor.email,
           total: currency.format(total),
           gifts: donorDonations.length,
-          lastGift: lastGift ? formatDate(lastGift) : "—",
+          lastGift: lastGift ? formatDate(lastGift) : "N/A",
         };
       })
       .sort((a, b) => (a.total < b.total ? 1 : -1));

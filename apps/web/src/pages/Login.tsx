@@ -53,7 +53,7 @@ export function Login() {
             <input
               type="password"
               name="password"
-              placeholder="••••••••"
+              placeholder="********"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
             />

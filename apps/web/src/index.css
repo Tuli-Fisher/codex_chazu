@@ -217,6 +217,10 @@ h2 {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+.grid-4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
 .card {
   background: var(--card);
   border: 1px solid var(--border);
@@ -383,6 +387,16 @@ h2 {
 .pill.warning {
   background: rgba(217, 119, 6, 0.16);
   color: var(--warning);
+}
+
+.pill.success {
+  background: rgba(5, 150, 105, 0.16);
+  color: #047857;
+}
+
+.pill.danger {
+  background: rgba(220, 38, 38, 0.14);
+  color: #b91c1c;
 }
 
 .badge {
@@ -625,6 +639,9 @@ h2 {
   .grid-3 {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+  .grid-4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
   .form-grid,
   .filter-row {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -661,6 +678,9 @@ h2 {
 
   .grid-2,
   .grid-3 {
+    grid-template-columns: 1fr;
+  }
+  .grid-4 {
     grid-template-columns: 1fr;
   }
 

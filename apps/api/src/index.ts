@@ -115,7 +115,7 @@ const locationOrders: LocationOrder[] = [
     locationId: "loc-2",
     locationName: "Northside Middle School",
     status: "missing",
-    updatedAt: "—",
+    updatedAt: "-",
     items: [],
   },
   {
