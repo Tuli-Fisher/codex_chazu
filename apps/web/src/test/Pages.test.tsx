@@ -8,7 +8,13 @@ describe("Today Setup", () => {
     renderWithAuth("/today");
 
     expect(
-      await screen.findByRole("heading", { name: "Available today" })
+      await screen.findByRole("heading", { name: "Breakfast" })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Supper" })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Available menu items" })
     ).toBeInTheDocument();
   });
 });
