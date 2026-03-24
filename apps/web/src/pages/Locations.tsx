@@ -1,8 +1,25 @@
-import { Link } from "react-router-dom";
+import type { KeyboardEvent, MouseEvent } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { PageHeader } from "../ui/PageHeader";
 import { locations } from "../data/locations";
 
 export function Locations() {
+  const navigate = useNavigate();
+
+  const openLocation = (locationId: string) => {
+    navigate(`/locations/${locationId}`);
+  };
+
+  const handleRowKeyDown = (
+    event: KeyboardEvent<HTMLDivElement>,
+    locationId: string
+  ) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      openLocation(locationId);
+    }
+  };
+
   return (
     <div className="stack">
       <PageHeader
@@ -55,7 +72,15 @@ export function Locations() {
             <div>Action</div>
           </div>
           {locations.map((location) => (
-            <div key={location.id} className="data-row">
+            <div
+              key={location.id}
+              className="data-row clickable"
+              role="button"
+              tabIndex={0}
+              aria-label={`Open ${location.name}`}
+              onClick={() => openLocation(location.id)}
+              onKeyDown={(event) => handleRowKeyDown(event, location.id)}
+            >
               <div>
                 <div className="item-title">{location.name}</div>
                 <div className="muted">
@@ -76,7 +101,13 @@ export function Locations() {
                 {location.fundraisingTarget.toLocaleString()}
               </div>
               <div>
-                <Link className="button ghost" to={`/locations/${location.id}`}>
+                <Link
+                  className="button ghost"
+                  to={`/locations/${location.id}`}
+                  onClick={(event: MouseEvent<HTMLAnchorElement>) =>
+                    event.stopPropagation()
+                  }
+                >
                   Open
                 </Link>
               </div>

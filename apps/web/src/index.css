@@ -332,6 +332,16 @@ h2 {
   background: rgba(15, 118, 110, 0.06);
 }
 
+.data-row.clickable {
+  cursor: pointer;
+}
+
+.data-row.clickable:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
 .toolbar {
   display: grid;
   grid-template-columns: 2fr 1fr 1fr auto;
