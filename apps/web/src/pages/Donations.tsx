@@ -27,13 +27,21 @@ export function Donations() {
   const activeTab = searchParams.get("tab") ?? "donors";
   const location = locationId ? getLocationById(locationId) : null;
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [locationFilter, setLocationFilter] = useState(locationId ?? "all");
+  const [dateRange, setDateRange] = useState("");
+  const [lastAction, setLastAction] = useState<string | null>(null);
 
   const donationRows = useMemo(() => {
-    const filtered = locationId
-      ? donations.filter((donation) => donation.locationId === locationId)
-      : donations;
+    const normalizedSearch = search.trim().toLowerCase();
+    const filtered = donations.filter((donation) => {
+      if (locationFilter === "all") return true;
+      if (locationFilter === "general") return donation.locationId === null;
+      return donation.locationId === locationFilter;
+    });
 
-    return filtered.map((donation) => {
+    return filtered
+      .map((donation) => {
       const donor = getDonorById(donation.donorId);
       const donationLocation = donation.locationId
         ? getLocationById(donation.locationId)
@@ -48,15 +56,36 @@ export function Donations() {
         method: donation.method,
         note: donation.note ?? "No note",
       };
-    });
-  }, [locationId]);
+    })
+      .filter((row) => {
+        if (!normalizedSearch) return true;
+        return (
+          row.donor.toLowerCase().includes(normalizedSearch) ||
+          row.email.toLowerCase().includes(normalizedSearch)
+        );
+      })
+      .filter((row) => {
+        if (!dateRange.trim()) return true;
+        return row.date.toLowerCase().includes(dateRange.trim().toLowerCase());
+      });
+  }, [locationFilter, search, dateRange]);
 
   const donorRows = useMemo(() => {
+    const normalizedSearch = search.trim().toLowerCase();
     return donors
       .map((donor) => {
         const donorDonations = donations.filter(
           (donation) => donation.donorId === donor.id,
         );
+        const matchesLocation = (() => {
+          if (locationFilter === "all") return true;
+          if (locationFilter === "general") {
+            return donorDonations.some((donation) => donation.locationId === null);
+          }
+          return donorDonations.some(
+            (donation) => donation.locationId === locationFilter,
+          );
+        })();
         const total = donorDonations.reduce(
           (sum, donation) => sum + donation.amount,
           0,
@@ -72,17 +101,26 @@ export function Donations() {
           total: currency.format(total),
           gifts: donorDonations.length,
           lastGift: lastGift ? formatDate(lastGift) : "N/A",
+          matchesLocation,
         };
       })
+      .filter((row) => row.matchesLocation)
+      .filter((row) => {
+        if (!normalizedSearch) return true;
+        return (
+          row.name.toLowerCase().includes(normalizedSearch) ||
+          row.email.toLowerCase().includes(normalizedSearch)
+        );
+      })
       .sort((a, b) => (a.total < b.total ? 1 : -1));
-  }, []);
+  }, [locationFilter, search]);
 
   const donorCols = "1.4fr 1.6fr 0.9fr 0.9fr";
   const donationCols = "1.4fr 1.5fr 0.9fr 0.9fr 0.8fr 0.6fr";
 
   const tabLink = (tab: string) =>
     `?${createSearchParams({
-      location: locationId ?? "",
+      location: locationFilter === "all" ? "" : locationFilter,
       tab,
     }).toString()}`;
 
@@ -93,16 +131,26 @@ export function Donations() {
         description="All locations report into one central donor table. Track pledges and apply filters as needed."
         actions={
           <div className="button-row">
-            <button className="button">Export</button>
-            <button className="button primary">Add donation</button>
+            <button className="button" type="button" onClick={() => setLastAction("Donations export prepared (mock)")}>
+              Export
+            </button>
+            <button className="button primary" type="button" onClick={() => setLastAction("Add donation flow opened (mock)")}>
+              Add donation
+            </button>
           </div>
         }
         meta={
-          location ? (
-            <div className="meta-row">
-              <span className="pill">Filtered: {location.name}</span>
-            </div>
-          ) : undefined
+          <>
+            {locationFilter !== "all" ? (
+              <span className="pill">
+                Filtered:{" "}
+                {locationFilter === "general"
+                  ? "General Fund"
+                  : getLocationById(locationFilter)?.name ?? location?.name ?? "Location"}
+              </span>
+            ) : null}
+            {lastAction ? <span className="pill subtle">{lastAction}</span> : null}
+          </>
         }
       />
 
@@ -124,23 +172,47 @@ export function Donations() {
       <div className="toolbar panel">
         <label className="field compact">
           <span>Search donor</span>
-          <input type="text" placeholder="Name or email" />
+          <input
+            type="text"
+            placeholder="Name or email"
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+          />
         </label>
         <label className="field compact">
           <span>Location</span>
-          <select defaultValue={location ? location.name : "All locations"}>
-            <option>All locations</option>
+          <select
+            value={locationFilter}
+            onChange={(event) => setLocationFilter(event.target.value)}
+          >
+            <option value="all">All locations</option>
             {locations.map((site) => (
-              <option key={site.id}>{site.name}</option>
+              <option key={site.id} value={site.id}>
+                {site.name}
+              </option>
             ))}
-            <option>General Fund</option>
+            <option value="general">General Fund</option>
           </select>
         </label>
         <label className="field compact">
           <span>Date range</span>
-          <input type="text" placeholder="Mar 1 - Apr 30" />
+          <input
+            type="text"
+            placeholder="Mar 1 - Apr 30"
+            value={dateRange}
+            onChange={(event) => setDateRange(event.target.value)}
+          />
         </label>
-        <button className="button ghost" type="button">
+        <button
+          className="button ghost"
+          type="button"
+          onClick={() => {
+            setSearch("");
+            setLocationFilter(locationId ?? "all");
+            setDateRange("");
+            setLastAction("Filters cleared");
+          }}
+        >
           Clear filters
         </button>
       </div>
