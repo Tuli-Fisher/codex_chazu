@@ -8,6 +8,7 @@ import { Locations } from "./pages/Locations";
 import { Login } from "./pages/Login";
 import { NotFound } from "./pages/NotFound";
 import { OrdersToday } from "./pages/OrdersToday";
+import { SendOrders } from "./pages/SendOrders";
 import { Settings } from "./pages/Settings";
 import { Sms } from "./pages/Sms";
 import { TodaySetup } from "./pages/TodaySetup";
@@ -21,6 +22,7 @@ function App() {
           <Route index element={<Navigate to="/today" replace />} />
           <Route path="/today" element={<TodaySetup />} />
           <Route path="/orders" element={<OrdersToday />} />
+          <Route path="/orders/send" element={<SendOrders />} />
           <Route path="/locations" element={<Locations />} />
           <Route path="/locations/:locationId" element={<LocationDetail />} />
           <Route path="/history" element={<History />} />

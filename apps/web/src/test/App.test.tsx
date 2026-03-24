@@ -17,6 +17,7 @@ describe("app routing", () => {
       screen.getByPlaceholderText("you@organization.org"),
       "admin@example.org"
     );
+    await user.type(screen.getByPlaceholderText("********"), "password123");
     await user.click(screen.getByRole("button", { name: /sign in/i }));
 
     expect(

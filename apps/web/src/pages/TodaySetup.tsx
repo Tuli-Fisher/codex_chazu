@@ -1,102 +1,121 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import {
+  addTodayMenuItem,
+  createMenuBasic,
+  fetchMenuBasics,
+  fetchTodayMenu,
+  removeTodayMenuItem,
+  type MealLabel,
+  type MenuBasic,
+  type TodayMenu,
+} from "../data/menu";
 import { PageHeader } from "../ui/PageHeader";
 
-type MealLabel = "Breakfast" | "Supper";
-
-type MenuItem = {
-  id: string;
-  name: string;
-  defaultMeal: MealLabel;
-};
-
-const initialMenuItems: MenuItem[] = [
-  { id: "bagels", name: "Bagels", defaultMeal: "Breakfast" },
-  { id: "fresh-fruit", name: "Fresh fruit", defaultMeal: "Breakfast" },
-  { id: "yogurt-cups", name: "Yogurt cups", defaultMeal: "Breakfast" },
-  { id: "chicken-chili", name: "Chicken chili", defaultMeal: "Supper" },
-  { id: "cornbread", name: "Cornbread", defaultMeal: "Supper" },
-  { id: "green-salad", name: "Green salad", defaultMeal: "Supper" },
-  { id: "turkey-sandwiches", name: "Turkey sandwiches", defaultMeal: "Supper" },
-  { id: "granola-bars", name: "Granola bars", defaultMeal: "Breakfast" },
-  { id: "milk-cartons", name: "Milk cartons", defaultMeal: "Breakfast" },
-  { id: "veggie-tray", name: "Veggie tray", defaultMeal: "Supper" },
-  { id: "apple-slices", name: "Apple slices", defaultMeal: "Breakfast" },
-  { id: "juice-boxes", name: "Juice boxes", defaultMeal: "Breakfast" },
-];
-
-const initialBreakfastIds = ["bagels", "fresh-fruit", "yogurt-cups"];
-const initialSupperIds = ["chicken-chili", "cornbread", "green-salad"];
-const initialAvailableIds = [
-  "turkey-sandwiches",
-  "granola-bars",
-  "milk-cartons",
-  "veggie-tray",
-  "apple-slices",
-  "juice-boxes",
-];
-
-function toSlug(value: string) {
-  return value
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
-
-function createUniqueItemId(name: string, existingIds: Set<string>) {
-  const base = toSlug(name) || "menu-item";
-  let candidate = base;
-  let suffix = 2;
-
-  while (existingIds.has(candidate)) {
-    candidate = `${base}-${suffix}`;
-    suffix += 1;
-  }
-
-  return candidate;
-}
-
 export function TodaySetup() {
-  const [menuItems, setMenuItems] = useState(initialMenuItems);
-  const [breakfastIds, setBreakfastIds] = useState(initialBreakfastIds);
-  const [supperIds, setSupperIds] = useState(initialSupperIds);
-  const [availableIds, setAvailableIds] = useState(initialAvailableIds);
+  const [menuBasics, setMenuBasics] = useState<MenuBasic[]>([]);
+  const [todayMenu, setTodayMenu] = useState<TodayMenu | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [isAddMealOpen, setIsAddMealOpen] = useState(false);
   const [newItemName, setNewItemName] = useState("");
   const [newItemDefaultMeal, setNewItemDefaultMeal] = useState<MealLabel>("Breakfast");
   const [newItemError, setNewItemError] = useState("");
 
-  const itemsById = Object.fromEntries(
-    menuItems.map((item) => [item.id, item])
-  ) as Record<string, MenuItem>;
+  useEffect(() => {
+    let isCurrent = true;
 
+    Promise.all([fetchTodayMenu(), fetchMenuBasics()])
+      .then(([menu, basics]) => {
+        if (!isCurrent) return;
+        setTodayMenu(menu);
+        setMenuBasics(basics);
+      })
+      .catch((loadError) => {
+        if (!isCurrent) return;
+        setError(
+          loadError instanceof Error ? loadError.message : "Unable to load menu data.",
+        );
+      })
+      .finally(() => {
+        if (!isCurrent) return;
+        setIsLoading(false);
+      });
+
+    return () => {
+      isCurrent = false;
+    };
+  }, []);
+
+  const breakfastItems = useMemo(
+    () => todayMenu?.items.filter((item) => item.mealType === "breakfast") ?? [],
+    [todayMenu],
+  );
+  const supperItems = useMemo(
+    () => todayMenu?.items.filter((item) => item.mealType === "supper") ?? [],
+    [todayMenu],
+  );
+  const selectedBasicIds = new Set(
+    todayMenu?.items.map((item) => item.basicId).filter(Boolean) ?? [],
+  );
+  const availableItems = menuBasics.filter((item) => !selectedBasicIds.has(item.id));
   const menuCols = "1.6fr 1fr 0.8fr";
   const availableCols = "1.8fr 1fr 1.2fr";
-  const breakfastItems = breakfastIds.map((id) => itemsById[id]);
-  const supperItems = supperIds.map((id) => itemsById[id]);
-  const availableItems = availableIds.map((id) => itemsById[id]);
 
-  const addToBreakfast = (id: string) => {
-    setAvailableIds((prev) => prev.filter((itemId) => itemId !== id));
-    setBreakfastIds((prev) => (prev.includes(id) ? prev : [...prev, id]));
+  const addToMeal = async (basic: MenuBasic, mealType: "breakfast" | "supper") => {
+    if (!todayMenu) return;
+
+    setError(null);
+
+    try {
+      const item = await addTodayMenuItem(todayMenu.id, {
+        basicId: basic.id,
+        name: basic.name,
+        mealType,
+        unit: basic.defaultUnit,
+      });
+
+      setTodayMenu((current) =>
+        current
+          ? {
+              ...current,
+              items: [...current.items, item],
+            }
+          : current,
+      );
+    } catch (actionError) {
+      setError(
+        actionError instanceof Error
+          ? actionError.message
+          : "Unable to add menu item.",
+      );
+    }
   };
 
-  const addToSupper = (id: string) => {
-    setAvailableIds((prev) => prev.filter((itemId) => itemId !== id));
-    setSupperIds((prev) => (prev.includes(id) ? prev : [...prev, id]));
+  const removeFromMeal = async (itemId: string) => {
+    if (!todayMenu) return;
+
+    setError(null);
+
+    try {
+      await removeTodayMenuItem(todayMenu.id, itemId);
+      setTodayMenu((current) =>
+        current
+          ? {
+              ...current,
+              items: current.items.filter((item) => item.id !== itemId),
+            }
+          : current,
+      );
+    } catch (actionError) {
+      setError(
+        actionError instanceof Error
+          ? actionError.message
+          : "Unable to remove menu item.",
+      );
+    }
   };
 
-  const removeFromBreakfast = (id: string) => {
-    setBreakfastIds((prev) => prev.filter((itemId) => itemId !== id));
-    setAvailableIds((prev) => (prev.includes(id) ? prev : [...prev, id]));
-  };
-
-  const removeFromSupper = (id: string) => {
-    setSupperIds((prev) => prev.filter((itemId) => itemId !== id));
-    setAvailableIds((prev) => (prev.includes(id) ? prev : [...prev, id]));
-  };
-
-  const addAvailableItem = (event: React.FormEvent<HTMLFormElement>) => {
+  const addAvailableItem = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const trimmedName = newItemName.trim();
 
@@ -105,8 +124,8 @@ export function TodaySetup() {
       return;
     }
 
-    const alreadyExists = menuItems.some(
-      (item) => item.name.toLowerCase() === trimmedName.toLowerCase()
+    const alreadyExists = menuBasics.some(
+      (item) => item.name.toLowerCase() === trimmedName.toLowerCase(),
     );
 
     if (alreadyExists) {
@@ -114,22 +133,25 @@ export function TodaySetup() {
       return;
     }
 
-    const id = createUniqueItemId(
-      trimmedName,
-      new Set(menuItems.map((item) => item.id))
-    );
-    const newItem: MenuItem = {
-      id,
-      name: trimmedName,
-      defaultMeal: newItemDefaultMeal,
-    };
+    try {
+      const item = await createMenuBasic({
+        name: trimmedName,
+        defaultUnit: "unit",
+        defaultMeal: newItemDefaultMeal,
+      });
 
-    setMenuItems((prev) => [...prev, newItem]);
-    setAvailableIds((prev) => [...prev, id]);
-    setNewItemName("");
-    setNewItemDefaultMeal("Breakfast");
-    setNewItemError("");
-    setIsAddMealOpen(false);
+      setMenuBasics((current) => [...current, item]);
+      setNewItemName("");
+      setNewItemDefaultMeal("Breakfast");
+      setNewItemError("");
+      setIsAddMealOpen(false);
+    } catch (createError) {
+      setNewItemError(
+        createError instanceof Error
+          ? createError.message
+          : "Unable to add menu basic.",
+      );
+    }
   };
 
   const openAddMealForm = () => {
@@ -151,6 +173,8 @@ export function TodaySetup() {
         description="Only show what is available today."
       />
 
+      {error ? <div className="form-error">{error}</div> : null}
+
       <div className="grid grid-2">
         <section className="panel">
           <div className="card-head">
@@ -159,28 +183,41 @@ export function TodaySetup() {
               <div className="muted">{breakfastItems.length} items</div>
             </div>
           </div>
-          <div className="data-table">
-            <div className="data-row header" style={{ "--cols": menuCols } as React.CSSProperties}>
-              <div>Name</div>
-              <div>Status</div>
-              <div>Action</div>
-            </div>
-            {breakfastItems.map((item) => (
-              <div key={item.id} className="data-row" style={{ "--cols": menuCols } as React.CSSProperties}>
-                <div className="item-title">{item.name}</div>
-                <div>Available</div>
-                <div>
-                  <button
-                    className="button ghost small"
-                    type="button"
-                    onClick={() => removeFromBreakfast(item.id)}
-                  >
-                    Remove
-                  </button>
-                </div>
+          {isLoading ? (
+            <div className="muted">Loading breakfast items...</div>
+          ) : (
+            <div className="data-table">
+              <div
+                className="data-row header"
+                style={{ "--cols": menuCols } as React.CSSProperties}
+              >
+                <div>Name</div>
+                <div>Status</div>
+                <div>Action</div>
               </div>
-            ))}
-          </div>
+              {breakfastItems.map((item) => (
+                <div
+                  key={item.id}
+                  className="data-row"
+                  style={{ "--cols": menuCols } as React.CSSProperties}
+                >
+                  <div className="item-title">{item.name}</div>
+                  <div>Available</div>
+                  <div>
+                    <button
+                      className="button ghost small"
+                      type="button"
+                      onClick={() => {
+                        void removeFromMeal(item.id);
+                      }}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </section>
 
         <section className="panel">
@@ -190,28 +227,41 @@ export function TodaySetup() {
               <div className="muted">{supperItems.length} items</div>
             </div>
           </div>
-          <div className="data-table">
-            <div className="data-row header" style={{ "--cols": menuCols } as React.CSSProperties}>
-              <div>Name</div>
-              <div>Status</div>
-              <div>Action</div>
-            </div>
-            {supperItems.map((item) => (
-              <div key={item.id} className="data-row" style={{ "--cols": menuCols } as React.CSSProperties}>
-                <div className="item-title">{item.name}</div>
-                <div>Available</div>
-                <div>
-                  <button
-                    className="button ghost small"
-                    type="button"
-                    onClick={() => removeFromSupper(item.id)}
-                  >
-                    Remove
-                  </button>
-                </div>
+          {isLoading ? (
+            <div className="muted">Loading supper items...</div>
+          ) : (
+            <div className="data-table">
+              <div
+                className="data-row header"
+                style={{ "--cols": menuCols } as React.CSSProperties}
+              >
+                <div>Name</div>
+                <div>Status</div>
+                <div>Action</div>
               </div>
-            ))}
-          </div>
+              {supperItems.map((item) => (
+                <div
+                  key={item.id}
+                  className="data-row"
+                  style={{ "--cols": menuCols } as React.CSSProperties}
+                >
+                  <div className="item-title">{item.name}</div>
+                  <div>Available</div>
+                  <div>
+                    <button
+                      className="button ghost small"
+                      type="button"
+                      onClick={() => {
+                        void removeFromMeal(item.id);
+                      }}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </section>
       </div>
 
@@ -274,35 +324,52 @@ export function TodaySetup() {
         {isAddMealOpen && newItemError ? (
           <div className="form-error">{newItemError}</div>
         ) : null}
-        <div className="data-table">
-          <div className="data-row header" style={{ "--cols": availableCols } as React.CSSProperties}>
-            <div>Name</div>
-            <div>Default meal</div>
-            <div>Add to today</div>
-          </div>
-          {availableItems.map((item) => (
-            <div key={item.id} className="data-row" style={{ "--cols": availableCols } as React.CSSProperties}>
-              <div className="item-title">{item.name}</div>
-              <div>{item.defaultMeal}</div>
-              <div className="button-row">
-                <button
-                  className="button ghost small"
-                  type="button"
-                  onClick={() => addToBreakfast(item.id)}
-                >
-                  Add breakfast
-                </button>
-                <button
-                  className="button ghost small"
-                  type="button"
-                  onClick={() => addToSupper(item.id)}
-                >
-                  Add supper
-                </button>
-              </div>
+        {isLoading ? (
+          <div className="muted">Loading available menu items...</div>
+        ) : availableItems.length === 0 ? (
+          <div className="muted">All available items are already on today's menu.</div>
+        ) : (
+          <div className="data-table">
+            <div
+              className="data-row header"
+              style={{ "--cols": availableCols } as React.CSSProperties}
+            >
+              <div>Name</div>
+              <div>Default meal</div>
+              <div>Add to today</div>
             </div>
-          ))}
-        </div>
+            {availableItems.map((item) => (
+              <div
+                key={item.id}
+                className="data-row"
+                style={{ "--cols": availableCols } as React.CSSProperties}
+              >
+                <div className="item-title">{item.name}</div>
+                <div>{item.defaultMeal}</div>
+                <div className="button-row">
+                  <button
+                    className="button ghost small"
+                    type="button"
+                    onClick={() => {
+                      void addToMeal(item, "breakfast");
+                    }}
+                  >
+                    Add breakfast
+                  </button>
+                  <button
+                    className="button ghost small"
+                    type="button"
+                    onClick={() => {
+                      void addToMeal(item, "supper");
+                    }}
+                  >
+                    Add supper
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </section>
     </div>
   );

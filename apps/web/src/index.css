@@ -249,6 +249,11 @@ h2 {
   box-shadow: none;
 }
 
+.panel.highlight {
+  border-color: rgba(15, 118, 110, 0.45);
+  box-shadow: 0 10px 30px rgba(15, 118, 110, 0.08);
+}
+
 .card-head {
   display: flex;
   justify-content: space-between;
@@ -470,6 +475,19 @@ h2 {
   background: transparent;
 }
 
+.text-button {
+  border: none;
+  background: transparent;
+  padding: 0;
+  color: var(--brand-strong);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.text-button:hover {
+  text-decoration: underline;
+}
+
 .chip {
   border: 1px solid var(--border);
   background: rgba(255, 255, 255, 0.8);
@@ -511,6 +529,10 @@ h2 {
   display: grid;
   gap: 16px;
   grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.donation-form {
+  margin-bottom: 10px;
 }
 
 .filter-row {
@@ -625,6 +647,44 @@ h2 {
 .detail-spacer {
   display: inline-block;
   width: 16px;
+}
+
+.inline-pill {
+  margin-left: 8px;
+}
+
+.order-card {
+  display: grid;
+  gap: 18px;
+}
+
+.order-card.sent {
+  border: 1px solid rgba(5, 150, 105, 0.24);
+}
+
+.order-lines {
+  margin-top: 2px;
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  border: none;
+  background: rgba(31, 29, 26, 0.42);
+  padding: 24px;
+  display: grid;
+  place-items: center;
+  z-index: 50;
+  cursor: default;
+}
+
+.modal-card {
+  width: min(100%, 420px);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+  box-shadow: var(--shadow);
 }
 
 .stagger > * {

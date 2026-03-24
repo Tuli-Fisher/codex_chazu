@@ -67,7 +67,7 @@
 
 - `donations`
   - `id` (pk), `location_id` (fk, nullable for general fund), `season_id` (fk)
-  - `donor_id` (fk), `amount`, `donated_at`, `note`
+  - `donor_id` (fk), `amount`, `donated_at`, `method`, `note`
 
 - `participants_daily`
   - `id` (pk), `location_id` (fk), `season_id` (fk)
@@ -114,6 +114,7 @@
   - Menu items remain editable at all times; editing the menu does not unlock locked orders.
   - Default lock time is configured in admin settings; daily menus can override via `lock_at`.
 - Donors are global profiles; donations reference the donor profile.
+- Donation entry includes a `method` dropdown (`cash`, `check`, `credit card`, `other`) plus a freeform notes field.
 
 ### Constraints
 - `daily_menus`: unique on (`season_id`, `date`).
@@ -218,4 +219,14 @@
 
 ## Implementation Notes (2026-03-24)
 - Updated Today Setup so admins can add ad hoc menu items directly into "Available menu items" with name/default-meal inputs and duplicate-name validation.
+- Replaced frontend mock data on Locations list/detail with API-backed reads, including loading, empty, and error states.
+- Wired Orders Today and Send Orders to API-backed totals, per-location rows, reminder actions, email staging, and lock/unlock actions.
+- Wired Today Setup to `GET /menus/today` + `GET /menu-basics`, plus API-backed add/remove actions for today's menu items and API-backed creation of new menu basics.
+- Wired Donations and History to API-backed queries, with filters reflected in URL query params and passed through to backend endpoints.
+- Persisted Admin Settings through `GET /settings` and `PATCH /settings`.
+- Replaced localStorage-only mock auth with API login/logout/session calls backed by a token flow persisted in localStorage on the web client.
+- Expanded the mock API data model to use richer frontend-facing shapes for locations, orders, menus, donations, and aggregates, and added a lightweight CORS middleware for local web-to-api development.
+- Added manager profiles and today's order summaries to location overview data.
+- Added a dedicated send/review staging page for per-location invoice sending before lock.
+- Added donation method tracking with a notes field in the donor flow UI and spec.
 

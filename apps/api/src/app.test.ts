@@ -14,10 +14,23 @@ describe("auth endpoints", () => {
   it("returns a token and user", async () => {
     const response = await request(app)
       .post("/auth/login")
-      .send({ email: "admin@example.org" });
+      .send({ email: "admin@example.org", password: "password123" });
     expect(response.status).toBe(200);
     expect(response.body.user.email).toBe("admin@example.org");
-    expect(response.body.token).toBe("mock-token");
+    expect(typeof response.body.token).toBe("string");
+  });
+
+  it("returns the current session", async () => {
+    const login = await request(app)
+      .post("/auth/login")
+      .send({ email: "admin@example.org", password: "password123" });
+
+    const response = await request(app)
+      .get("/auth/session")
+      .set("Authorization", `Bearer ${login.body.token}`);
+
+    expect(response.status).toBe(200);
+    expect(response.body.user.email).toBe("admin@example.org");
   });
 
   it("allows logout", async () => {
@@ -36,9 +49,9 @@ describe("locations", () => {
   });
 
   it("returns a location by id", async () => {
-    const response = await request(app).get("/locations/loc-1");
+    const response = await request(app).get("/locations/riverside");
     expect(response.status).toBe(200);
-    expect(response.body.item.id).toBe("loc-1");
+    expect(response.body.item.id).toBe("riverside");
   });
 
   it("returns 404 for missing location", async () => {
@@ -56,21 +69,21 @@ describe("locations", () => {
 
   it("patches a location", async () => {
     const response = await request(app)
-      .patch("/locations/loc-1")
+      .patch("/locations/riverside")
       .send({ status: "inactive" });
     expect(response.status).toBe(200);
-    expect(response.body.id).toBe("loc-1");
+    expect(response.body.id).toBe("riverside");
     expect(response.body.updates.status).toBe("inactive");
   });
 
   it("returns location orders", async () => {
-    const response = await request(app).get("/locations/loc-1/orders");
+    const response = await request(app).get("/locations/riverside/orders");
     expect(response.status).toBe(200);
     expect(Array.isArray(response.body.items)).toBe(true);
   });
 
   it("returns fundraising details", async () => {
-    const response = await request(app).get("/locations/loc-1/fundraising");
+    const response = await request(app).get("/locations/riverside/fundraising");
     expect(response.status).toBe(200);
     expect(response.body.targetAmount).toBeGreaterThan(0);
   });
@@ -81,23 +94,23 @@ describe("menus", () => {
     const response = await request(app).get("/menus/today");
     expect(response.status).toBe(200);
     expect(response.body.items.length).toBeGreaterThan(0);
+    expect(response.body.id).toBeDefined();
   });
 
   it("creates a menu item", async () => {
     const response = await request(app)
-      .post("/menus")
-      .send({ name: "Sample item" });
+      .post("/menu-basics")
+      .send({ name: "Sample item", defaultUnit: "trays", defaultMeal: "Breakfast" });
     expect(response.status).toBe(201);
     expect(response.body.item.name).toBe("Sample item");
   });
 
   it("patches a menu item", async () => {
     const response = await request(app)
-      .patch("/menus/menu-1")
+      .patch("/menu-basics/bagels")
       .send({ name: "Updated item" });
     expect(response.status).toBe(200);
-    expect(response.body.id).toBe("menu-1");
-    expect(response.body.updates.name).toBe("Updated item");
+    expect(response.body.item.name).toBe("Updated item");
   });
 });
 
@@ -105,9 +118,9 @@ describe("orders", () => {
   it("creates an order", async () => {
     const response = await request(app)
       .post("/orders")
-      .send({ locationId: "loc-1" });
+      .send({ locationId: "riverside" });
     expect(response.status).toBe(201);
-    expect(response.body.item.locationId).toBe("loc-1");
+    expect(response.body.item.locationId).toBe("riverside");
   });
 
   it("patches an order", async () => {
@@ -128,15 +141,15 @@ describe("orders", () => {
   });
 
   it("locks a single order", async () => {
-    const response = await request(app).post("/orders/order-1/lock");
+    const response = await request(app).post("/orders/riverside/lock");
     expect(response.status).toBe(200);
-    expect(response.body.orderId).toBe("order-1");
+    expect(response.body.orderId).toBe("riverside");
   });
 
   it("unlocks a single order", async () => {
-    const response = await request(app).post("/orders/order-1/unlock");
+    const response = await request(app).post("/orders/riverside/unlock");
     expect(response.status).toBe(200);
-    expect(response.body.orderId).toBe("order-1");
+    expect(response.body.orderId).toBe("riverside");
   });
 
   it("returns aggregate totals for today", async () => {
@@ -160,9 +173,15 @@ describe("orders", () => {
   it("emails selected locations", async () => {
     const response = await request(app)
       .post("/orders/today/email")
-      .send({ locationIds: ["loc-1", "loc-2"] });
+      .send({ locationIds: ["riverside", "northside-ms"] });
     expect(response.status).toBe(200);
     expect(response.body.sent).toBe(2);
+  });
+
+  it("sends reminders", async () => {
+    const response = await request(app).post("/orders/today/remind");
+    expect(response.status).toBe(200);
+    expect(response.body.ok).toBe(true);
   });
 
   it("returns orders with filters", async () => {
@@ -194,7 +213,7 @@ describe("donations", () => {
   it("creates a donation", async () => {
     const response = await request(app)
       .post("/donations")
-      .send({ donor: "Test", amount: 200 });
+      .send({ donorName: "Test Donor", donorEmail: "test@example.org", amount: 200 });
     expect(response.status).toBe(201);
     expect(response.body.item.amount).toBe(200);
   });
@@ -210,7 +229,7 @@ describe("participants", () => {
   it("records daily participants", async () => {
     const response = await request(app)
       .post("/participants/daily")
-      .send({ locationId: "loc-1", total: 100 });
+      .send({ locationId: "riverside", total: 100 });
     expect(response.status).toBe(201);
     expect(response.body.item.total).toBe(100);
   });

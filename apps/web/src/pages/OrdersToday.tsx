@@ -1,147 +1,191 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import {
+  emailOrders,
+  exportOrders,
+  fetchOrdersToday,
+  fetchTodayAggregateTotals,
+  lockAllOrders,
+  lockOrder,
+  sendOrderReminders,
+  unlockOrder,
+  type AggregateRow,
+  type LocationOrder,
+} from "../data/orders";
 import { PageHeader } from "../ui/PageHeader";
 
-type MealStatus = "submitted" | "missing" | "late" | "not_ordered";
-
-type LocationSubmission = {
-  id: string;
+type ManagerPopup = {
   name: string;
-  contact: string;
-  updatedAt: string;
-  breakfast: MealStatus;
-  lunch: MealStatus;
-  note: string;
-};
+  phone: string;
+  locationName: string;
+} | null;
 
-const breakfastTotals = [
-  { item: "Bagels", unit: "dozen", total: "96" },
-  { item: "Yogurt cups", unit: "cases", total: "180" },
-  { item: "Fresh fruit", unit: "trays", total: "28" },
-];
-
-const lunchTotals = [
-  { item: "Chicken chili", unit: "pans", total: "42" },
-  { item: "Cornbread", unit: "loaves", total: "38" },
-  { item: "Green salad", unit: "bags", total: "26" },
-];
-
-const submissions: LocationSubmission[] = [
-  {
-    id: "riverside",
-    name: "Riverside Community Center",
-    contact: "Taylor Lee",
-    updatedAt: "1:10 PM",
-    breakfast: "submitted",
-    lunch: "submitted",
-    note: "On time",
-  },
-  {
-    id: "northside-ms",
-    name: "Northside Middle School",
-    contact: "Jordan Smith",
-    updatedAt: "12:48 PM",
-    breakfast: "submitted",
-    lunch: "missing",
-    note: "Supper pending",
-  },
-  {
-    id: "oak-hill",
-    name: "Oak Hill Library",
-    contact: "Riley Patel",
-    updatedAt: "1:34 PM",
-    breakfast: "missing",
-    lunch: "late",
-    note: "Late supper order",
-  },
-  {
-    id: "southridge",
-    name: "Southridge Family Hub",
-    contact: "Morgan Price",
-    updatedAt: "-",
-    breakfast: "not_ordered",
-    lunch: "missing",
-    note: "Supper not received",
-  },
-  {
-    id: "eastfield",
-    name: "Eastfield Elementary",
-    contact: "Casey Tran",
-    updatedAt: "11:52 AM",
-    breakfast: "submitted",
-    lunch: "not_ordered",
-    note: "Supper not scheduled",
-  },
-];
-
-const statusMeta: Record<MealStatus, { label: string; tone: string }> = {
+const statusMeta: Record<LocationOrder["breakfast"], { label: string; tone: string }> = {
   submitted: { label: "Submitted", tone: "success" },
   late: { label: "Late", tone: "warning" },
   missing: { label: "Missing", tone: "danger" },
   not_ordered: { label: "Not ordered", tone: "subtle" },
 };
 
-function statusPill(status: MealStatus) {
+function statusPill(status: LocationOrder["breakfast"]) {
   const meta = statusMeta[status];
   return <span className={`pill ${meta.tone}`}>{meta.label}</span>;
 }
 
 export function OrdersToday() {
-  const perLocationCols = "2fr 1fr 1fr 1fr 1.2fr 1.5fr";
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const focusedLocationId = searchParams.get("location");
   const [missingOnly, setMissingOnly] = useState(false);
-  const [remindedIds, setRemindedIds] = useState<Set<string>>(new Set());
-  const [lockedIds, setLockedIds] = useState<Set<string>>(new Set());
+  const [selectedManager, setSelectedManager] = useState<ManagerPopup>(null);
   const [lastAction, setLastAction] = useState<string | null>(null);
+  const [orders, setOrders] = useState<LocationOrder[]>([]);
+  const [totals, setTotals] = useState<AggregateRow[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const breakfastSubmitted = submissions.filter(
+  useEffect(() => {
+    let isCurrent = true;
+
+    Promise.all([
+      fetchOrdersToday({
+        locationId: focusedLocationId,
+        missingOnly,
+      }),
+      fetchTodayAggregateTotals(),
+    ])
+      .then(([ordersResponse, totalsResponse]) => {
+        if (!isCurrent) return;
+        setOrders(ordersResponse.items);
+        setTotals(totalsResponse);
+      })
+      .catch((loadError) => {
+        if (!isCurrent) return;
+        setError(
+          loadError instanceof Error
+            ? loadError.message
+            : "Unable to load todays orders.",
+        );
+      })
+      .finally(() => {
+        if (!isCurrent) return;
+        setIsLoading(false);
+      });
+
+    return () => {
+      isCurrent = false;
+    };
+  }, [focusedLocationId, missingOnly]);
+
+  useEffect(() => {
+    if (!selectedManager) return undefined;
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setSelectedManager(null);
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [selectedManager]);
+
+  const breakfastTotals = useMemo(
+    () => totals.filter((row) => row.meal === "Breakfast"),
+    [totals],
+  );
+  const supperTotals = useMemo(
+    () => totals.filter((row) => row.meal === "Supper"),
+    [totals],
+  );
+  const focusedLocationName = focusedLocationId
+    ? orders.find((order) => order.locationId === focusedLocationId)?.locationName ?? null
+    : null;
+  const breakfastSubmitted = orders.filter(
     (row) => row.breakfast === "submitted" || row.breakfast === "late",
   ).length;
-  const lunchSubmitted = submissions.filter(
-    (row) => row.lunch === "submitted" || row.lunch === "late",
+  const supperSubmitted = orders.filter(
+    (row) => row.supper === "submitted" || row.supper === "late",
   ).length;
-  const missingEither = submissions.filter(
-    (row) => row.breakfast === "missing" || row.lunch === "missing",
+  const missingEither = orders.filter(
+    (row) => row.breakfast === "missing" || row.supper === "missing",
   ).length;
-  const lateCount = submissions.filter(
-    (row) => row.breakfast === "late" || row.lunch === "late",
+  const lateCount = orders.filter(
+    (row) => row.breakfast === "late" || row.supper === "late",
   ).length;
 
-  const filteredSubmissions = missingOnly
-    ? submissions.filter(
-        (row) => row.breakfast === "missing" || row.lunch === "missing",
-      )
-    : submissions;
-
-  const markReminded = (ids: string[], summary: string) => {
-    setRemindedIds((prev) => {
-      const next = new Set(prev);
-      ids.forEach((id) => next.add(id));
-      return next;
-    });
-    setLastAction(summary);
-  };
-
-  const toggleLock = (id: string, name: string) => {
-    setLockedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) {
-        next.delete(id);
-        setLastAction(`${name} unlocked`);
+  const toggleLock = async (order: LocationOrder) => {
+    try {
+      if (order.isLocked) {
+        await unlockOrder(order.id);
       } else {
-        next.add(id);
-        setLastAction(`${name} locked`);
+        await lockOrder(order.id);
       }
-      return next;
-    });
+
+      setOrders((current) =>
+        current.map((row) =>
+          row.id === order.id ? { ...row, isLocked: !row.isLocked } : row,
+        ),
+      );
+      setLastAction(`${order.locationName} ${order.isLocked ? "unlocked" : "locked"}`);
+    } catch (actionError) {
+      setError(
+        actionError instanceof Error ? actionError.message : "Unable to update lock state.",
+      );
+    }
   };
 
-  const lockAll = () => {
-    setLockedIds(new Set(submissions.map((row) => row.id)));
-    setLastAction("All locations locked for today");
+  const lockAll = async () => {
+    try {
+      await lockAllOrders();
+      setOrders((current) => current.map((row) => ({ ...row, isLocked: true })));
+      setLastAction("All locations locked for today");
+    } catch (actionError) {
+      setError(
+        actionError instanceof Error ? actionError.message : "Unable to lock all orders.",
+      );
+    }
   };
 
-  const exportMessage = (label: string) => {
-    setLastAction(`${label} export prepared (mock)`);
+  const sendReminders = async (locationIds?: string[], label?: string) => {
+    try {
+      const response = await sendOrderReminders(locationIds);
+      setLastAction(label ?? `Reminders sent to ${response.sent} locations`);
+    } catch (actionError) {
+      setError(
+        actionError instanceof Error ? actionError.message : "Unable to send reminders.",
+      );
+    }
+  };
+
+  const runExport = async (label: string, format: "csv" | "pdf" = "csv") => {
+    try {
+      await exportOrders(format);
+      setLastAction(`${label} export prepared`);
+    } catch (actionError) {
+      setError(
+        actionError instanceof Error ? actionError.message : "Unable to export orders.",
+      );
+    }
+  };
+
+  const reviewAndSend = () => {
+    navigate("/orders/send");
+  };
+
+  const clearFocus = () => {
+    navigate("/orders", { replace: true });
+  };
+
+  const sendInvoiceBatch = async () => {
+    try {
+      const response = await emailOrders();
+      setLastAction(`Prepared ${response.sent} location emails`);
+    } catch (actionError) {
+      setError(
+        actionError instanceof Error ? actionError.message : "Unable to queue emails.",
+      );
+    }
   };
 
   return (
@@ -151,37 +195,57 @@ export function OrdersToday() {
         description="Breakfast and supper orders are collected separately. Each location can submit one or both."
         actions={
           <div className="button-row">
-            <button className="button" type="button" onClick={() => exportMessage("Breakfast totals")}>
+            <button
+              className="button"
+              type="button"
+              onClick={() => {
+                void runExport("Breakfast totals");
+              }}
+            >
               Export breakfast
             </button>
-            <button className="button" type="button" onClick={() => exportMessage("Supper totals")}>
+            <button
+              className="button"
+              type="button"
+              onClick={() => {
+                void runExport("Supper totals");
+              }}
+            >
               Export supper
             </button>
-            <button className="button" type="button" onClick={() => exportMessage("Per-location orders")}>
+            <button
+              className="button"
+              type="button"
+              onClick={() => {
+                void sendInvoiceBatch();
+              }}
+            >
               Export by location
             </button>
-            <button className="button primary" type="button" onClick={lockAll}>
-              Send and lock
+            <button className="button primary" type="button" onClick={reviewAndSend}>
+              Review and send
             </button>
           </div>
         }
         meta={
-          <div className="meta-row">
+          <>
             <span className="pill">Breakfast: {breakfastSubmitted} submitted</span>
-            <span className="pill">Supper: {lunchSubmitted} submitted</span>
+            <span className="pill">Supper: {supperSubmitted} submitted</span>
             <span className="pill warning">{missingEither} missing</span>
             <span className="pill warning">{lateCount} late</span>
-            {missingOnly ? (
-              <span className="pill subtle">Showing missing only</span>
+            {focusedLocationName ? (
+              <span className="pill subtle">Focused: {focusedLocationName}</span>
             ) : null}
             {lastAction ? <span className="pill subtle">{lastAction}</span> : null}
-          </div>
+          </>
         }
       />
 
+      {error ? <div className="form-error">{error}</div> : null}
+
       <div className="grid grid-4 stagger">
         <div className="card stat-card" style={{ "--i": 0 } as React.CSSProperties}>
-          <div className="stat">{submissions.length}</div>
+          <div className="stat">{orders.length}</div>
           <div className="muted">Active locations</div>
         </div>
         <div className="card stat-card" style={{ "--i": 1 } as React.CSSProperties}>
@@ -189,7 +253,7 @@ export function OrdersToday() {
           <div className="muted">Breakfast submitted</div>
         </div>
         <div className="card stat-card" style={{ "--i": 2 } as React.CSSProperties}>
-          <div className="stat">{lunchSubmitted}</div>
+          <div className="stat">{supperSubmitted}</div>
           <div className="muted">Supper submitted</div>
         </div>
         <div className="card stat-card" style={{ "--i": 3 } as React.CSSProperties}>
@@ -199,111 +263,148 @@ export function OrdersToday() {
       </div>
 
       <section className="panel">
-          <div className="card-head">
-            <div>
-              <h2>Per-location submissions</h2>
-              <div className="muted">
-                Breakfast cutoff 7:15 AM | Supper cutoff 11:00 AM
-              </div>
-            </div>
-            <div className="button-row">
-              <button
-                className="button ghost"
-                type="button"
-                onClick={() =>
-                  setMissingOnly((prev) => {
-                    const next = !prev;
-                    setLastAction(next ? "Filtered to missing orders" : "Showing all submissions");
-                    return next;
-                  })
-                }
-              >
-                {missingOnly ? "Show all" : "Show missing only"}
-              </button>
-              <button
-                className="button ghost"
-                type="button"
-                onClick={() => {
-                  const needingReminder = submissions.filter(
-                    (row) =>
-                      row.breakfast === "missing" ||
-                      row.breakfast === "late" ||
-                      row.lunch === "missing" ||
-                      row.lunch === "late",
-                  );
-                  markReminded(
-                    needingReminder.map((row) => row.id),
-                    `Reminders sent to ${needingReminder.length} locations`,
-                  );
-                }}
-              >
-                Send reminders
-              </button>
+        <div className="card-head">
+          <div>
+            <h2>Per-location submissions</h2>
+            <div className="muted">
+              Breakfast cutoff 7:15 AM | Supper cutoff 11:00 AM
             </div>
           </div>
+          <div className="button-row">
+            {focusedLocationName ? (
+              <button className="button ghost" type="button" onClick={clearFocus}>
+                Show all locations
+              </button>
+            ) : null}
+            <button
+              className="button ghost"
+              type="button"
+              onClick={() => {
+                setIsLoading(true);
+                setError(null);
+                setMissingOnly((current) => !current);
+              }}
+            >
+              {missingOnly ? "Show all" : "Show missing only"}
+            </button>
+            <button
+              className="button ghost"
+              type="button"
+              onClick={() => {
+                void sendReminders();
+              }}
+            >
+              Send reminders
+            </button>
+            <button className="button ghost" type="button" onClick={() => void lockAll()}>
+              Lock all
+            </button>
+          </div>
+        </div>
+        {isLoading ? (
+          <div className="muted">Loading orders...</div>
+        ) : orders.length === 0 ? (
+          <div className="muted">No orders match the current filters.</div>
+        ) : (
           <div className="data-table">
-            <div className="data-row header" style={{ "--cols": perLocationCols } as React.CSSProperties}>
+            <div
+              className="data-row header"
+              style={{ "--cols": "2fr 1fr 1fr 1fr 1.2fr 1.2fr 1.4fr" } as React.CSSProperties}
+            >
               <div>Location</div>
               <div>Breakfast</div>
               <div>Supper</div>
               <div>Last update</div>
-              <div>Contact</div>
+              <div>Manager</div>
+              <div>Status</div>
               <div>Actions</div>
             </div>
-            {filteredSubmissions.map((row) => {
-              const reminded = remindedIds.has(row.id);
-              const isLocked = lockedIds.has(row.id);
-              return (
-                <div key={row.id} className="data-row" style={{ "--cols": perLocationCols } as React.CSSProperties}>
+            {orders.map((row) => (
+              <div
+                key={row.id}
+                className="data-row"
+                style={{ "--cols": "2fr 1fr 1fr 1fr 1.2fr 1.2fr 1.4fr" } as React.CSSProperties}
+              >
                 <div>
                   <Link
                     className="item-title inline-link"
-                    to={`/locations/${row.id}?tab=history`}
+                    to={`/locations/${row.locationId}?tab=overview`}
                   >
-                    {row.name}
+                    {row.locationName}
                   </Link>
                   <div className="muted">{row.note}</div>
-                  {isLocked ? (
+                  {row.isLocked ? (
                     <div className="pill-row">
                       <span className="pill subtle">Locked</span>
                     </div>
-                    ) : null}
-                  </div>
-                  <div>{statusPill(row.breakfast)}</div>
-                  <div>{statusPill(row.lunch)}</div>
-                  <div>{row.updatedAt}</div>
-                  <div className="muted">{row.contact}</div>
-                  <div className="button-row">
-                    <Link className="button ghost small" to={`/locations/${row.id}?tab=history`}>
-                      View
-                    </Link>
-                    <button
-                      className="button ghost small"
-                      type="button"
-                      onClick={() => markReminded([row.id], `Reminder sent to ${row.name}`)}
-                      disabled={reminded}
-                    >
-                      {reminded ? "Reminder sent" : "Reminder"}
-                    </button>
-                    <button
-                      className="button ghost small"
-                      type="button"
-                      onClick={() => toggleLock(row.id, row.name)}
-                    >
-                      {isLocked ? "Unlock" : "Lock"}
-                    </button>
-                  </div>
+                  ) : null}
                 </div>
-              );
-            })}
+                <div>{statusPill(row.breakfast)}</div>
+                <div>{statusPill(row.supper)}</div>
+                <div>{row.updatedAt}</div>
+                <div>
+                  <button
+                    className="text-button"
+                    type="button"
+                    onClick={() =>
+                      setSelectedManager({
+                        name: row.managerName,
+                        phone: row.managerPhone,
+                        locationName: row.locationName,
+                      })
+                    }
+                  >
+                    {row.managerName}
+                  </button>
+                  <div className="muted">Tap for number</div>
+                </div>
+                <div>
+                  {row.breakfast === "missing" || row.supper === "missing" ? (
+                    <span className="pill danger">Needs follow-up</span>
+                  ) : (
+                    <span className="pill success">Ready</span>
+                  )}
+                </div>
+                <div className="button-row">
+                  <Link className="button ghost small" to={`/locations/${row.locationId}?tab=overview`}>
+                    View
+                  </Link>
+                  <button
+                    className="button ghost small"
+                    type="button"
+                    onClick={() => {
+                      void sendReminders([row.locationId], `Reminder sent to ${row.locationName}`);
+                    }}
+                  >
+                    Reminder
+                  </button>
+                  <button
+                    className="button ghost small"
+                    type="button"
+                    onClick={() => {
+                      void toggleLock(row);
+                    }}
+                  >
+                    {row.isLocked ? "Unlock" : "Lock"}
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
-        </section>
+        )}
+      </section>
 
       <div className="grid grid-2">
         <section className="card">
           <div className="card-head">
             <h2>Breakfast totals</h2>
-            <button className="button ghost" type="button">
+            <button
+              className="button ghost"
+              type="button"
+              onClick={() => {
+                void runExport("Breakfast by location");
+              }}
+            >
               View breakfast by location
             </button>
           </div>
@@ -314,7 +415,7 @@ export function OrdersToday() {
               <div>Total</div>
             </div>
             {breakfastTotals.map((row) => (
-              <div key={row.item} className="table-row">
+              <div key={`${row.item}-${row.unit}`} className="table-row">
                 <div>{row.item}</div>
                 <div className="muted">{row.unit}</div>
                 <div>{row.total}</div>
@@ -326,7 +427,13 @@ export function OrdersToday() {
         <section className="card">
           <div className="card-head">
             <h2>Supper totals</h2>
-            <button className="button ghost" type="button">
+            <button
+              className="button ghost"
+              type="button"
+              onClick={() => {
+                void runExport("Supper by location");
+              }}
+            >
               View supper by location
             </button>
           </div>
@@ -336,8 +443,8 @@ export function OrdersToday() {
               <div>Unit</div>
               <div>Total</div>
             </div>
-            {lunchTotals.map((row) => (
-              <div key={row.item} className="table-row">
+            {supperTotals.map((row) => (
+              <div key={`${row.item}-${row.unit}`} className="table-row">
                 <div>{row.item}</div>
                 <div className="muted">{row.unit}</div>
                 <div>{row.total}</div>
@@ -346,6 +453,47 @@ export function OrdersToday() {
           </div>
         </section>
       </div>
+
+      {selectedManager ? (
+        <div
+          className="modal-backdrop"
+          aria-label="Close manager details"
+          role="presentation"
+          onClick={() => setSelectedManager(null)}
+        >
+          <div
+            className="modal-card"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="manager-details-title"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="card-head">
+              <div>
+                <h2 id="manager-details-title">{selectedManager.locationName}</h2>
+                <div className="muted">Manager contact</div>
+              </div>
+              <button
+                className="button ghost small"
+                type="button"
+                onClick={() => setSelectedManager(null)}
+              >
+                Close
+              </button>
+            </div>
+            <div className="list">
+              <div className="list-item compact">
+                <div className="muted">Name</div>
+                <div className="item-title">{selectedManager.name}</div>
+              </div>
+              <div className="list-item compact">
+                <div className="muted">Phone</div>
+                <div className="item-title">{selectedManager.phone}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

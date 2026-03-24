@@ -60,6 +60,7 @@ Build an admin-only web system to manage seasonal meal logistics across multiple
 - Actions:
   - Export aggregated order (CSV/PDF)
   - Export per-location orders (CSV/PDF)
+  - Review and send a per-location staging page before locking
   - Email orders per location (one email per location)
   - Optional: lock a single location or lock all for the date
   - Flag missing or late submissions
@@ -77,6 +78,8 @@ Build an admin-only web system to manage seasonal meal logistics across multiple
 - Locations are associated with seasons (active per season).
 - Location detail view:
   - Summary card (contact + address)
+  - Managers section
+  - Today's order summary
   - Fundraising section
     - Target (admin editable)
     - Total raised
@@ -95,7 +98,7 @@ Build an admin-only web system to manage seasonal meal logistics across multiple
 
 ### 6. Donations Page
 - Admin-only donation management page (public page later)
-- Captures donor name, amount, email, note
+- Captures donor name, amount, email, how donated, and note
 - Creates a donation record (no payment processing)
 - Donations can be general (not tied to a specific location)
 

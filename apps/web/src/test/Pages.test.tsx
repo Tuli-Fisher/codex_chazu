@@ -41,7 +41,7 @@ describe("Locations", () => {
     expect(
       await screen.findByRole("heading", { name: "Locations" })
     ).toBeInTheDocument();
-    expect(screen.getByText("Riverside Community Center")).toBeInTheDocument();
+    expect(await screen.findByText("Riverside Community Center")).toBeInTheDocument();
   });
 });
 
@@ -57,6 +57,8 @@ describe("Location Detail", () => {
     expect(
       screen.getByRole("heading", { name: "Primary contact" })
     ).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Managers" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Today's order" })).toBeInTheDocument();
   });
 
   it("renders donation tab content", async () => {
@@ -75,6 +77,8 @@ describe("Donations", () => {
     expect(
       await screen.findByRole("heading", { name: "Central donors" })
     ).toBeInTheDocument();
+    expect(await screen.findByText("Lydia Ross")).toBeInTheDocument();
+    expect(screen.getByText("Check")).toBeInTheDocument();
   });
 
   it("renders the donation log tab", async () => {
@@ -83,6 +87,18 @@ describe("Donations", () => {
     expect(
       await screen.findByRole("heading", { name: "Donation log" })
     ).toBeInTheDocument();
+  });
+
+  it("opens the donation form with a how-donated dropdown and notes field", async () => {
+    renderWithAuth("/donations");
+    const user = userEvent.setup();
+
+    await screen.findByRole("heading", { name: "Central donors" });
+    await user.click(screen.getByRole("button", { name: "Add donation" }));
+
+    expect(screen.getByRole("heading", { name: "New donation" })).toBeInTheDocument();
+    expect(screen.getByLabelText("How donated")).toBeInTheDocument();
+    expect(screen.getByLabelText("Notes")).toBeInTheDocument();
   });
 });
 

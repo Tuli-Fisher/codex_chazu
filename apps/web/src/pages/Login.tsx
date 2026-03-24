@@ -1,29 +1,48 @@
 import { useState } from "react";
 import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../app/auth";
+import { ApiError } from "../data/api";
 
 export function Login() {
-  const { user, login } = useAuth();
+  const { user, login, isLoading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   if (user) {
     return <Navigate to="/today" replace />;
   }
 
-  const handleSubmit = (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!email.trim()) {
       setError("Enter an email to continue.");
       return;
     }
+    if (!password.trim()) {
+      setError("Enter your password.");
+      return;
+    }
+
     setError("");
-    login(email.trim());
-    const next = (location.state as { from?: string } | null)?.from ?? "/today";
-    navigate(next, { replace: true });
+    setSubmitting(true);
+
+    try {
+      await login(email.trim(), password);
+      const next = (location.state as { from?: string } | null)?.from ?? "/today";
+      navigate(next, { replace: true });
+    } catch (submitError) {
+      setError(
+        submitError instanceof ApiError
+          ? submitError.message
+          : "Unable to sign in right now.",
+      );
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -33,7 +52,7 @@ export function Login() {
           <span className="pill">Admin Access</span>
           <h1>Chazu Seasonal Meals</h1>
           <p className="muted">
-            This is a lightweight, admin-only login. Any email works for now.
+            Sign in with your admin credentials to manage menus, orders, and locations.
           </p>
         </div>
         <form className="form" onSubmit={handleSubmit}>
@@ -59,8 +78,12 @@ export function Login() {
             />
           </label>
           {error ? <div className="form-error">{error}</div> : null}
-          <button className="button primary" type="submit">
-            Sign in
+          <button
+            className="button primary"
+            type="submit"
+            disabled={submitting || isLoading}
+          >
+            {submitting || isLoading ? "Signing in..." : "Sign in"}
           </button>
         </form>
         <div className="login-foot">

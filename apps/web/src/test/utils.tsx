@@ -13,7 +13,10 @@ export function renderApp(route: string, options: RenderOptions = {}) {
   if (options.userEmail) {
     window.localStorage.setItem(
       STORAGE_KEY,
-      JSON.stringify({ email: options.userEmail })
+      JSON.stringify({
+        token: "test-token",
+        user: { email: options.userEmail },
+      })
     );
   } else {
     window.localStorage.removeItem(STORAGE_KEY);

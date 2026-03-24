@@ -47,7 +47,13 @@ export function AppLayout() {
           </div>
           <div className="topbar-right">
             <span className="pill subtle">{user?.email ?? "admin"}</span>
-            <button className="button ghost" type="button" onClick={logout}>
+            <button
+              className="button ghost"
+              type="button"
+              onClick={() => {
+                void logout();
+              }}
+            >
               Sign out
             </button>
           </div>
