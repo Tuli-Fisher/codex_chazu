@@ -17,6 +17,21 @@ describe("Today Setup", () => {
       screen.getByRole("heading", { name: "Available menu items" })
     ).toBeInTheDocument();
   });
+
+  it("lets admins add a new available menu item", async () => {
+    renderWithAuth("/today");
+    const user = userEvent.setup();
+
+    await screen.findByRole("heading", { name: "Available menu items" });
+    expect(screen.queryByLabelText("Item name")).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Add meal" }));
+    await user.type(screen.getByLabelText("Item name"), "Oatmeal cups");
+    await user.click(screen.getByRole("button", { name: "Add to available" }));
+
+    expect(screen.getByText("Oatmeal cups")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Item name")).not.toBeInTheDocument();
+  });
 });
 
 describe("Locations", () => {
