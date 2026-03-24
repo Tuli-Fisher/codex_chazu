@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { PageHeader } from "../ui/PageHeader";
 import { useSearchParams } from "react-router-dom";
 import { getLocationById } from "../data/locations";
 
 type DrilldownTab = "items" | "locations" | "dates";
+type MealFilter = "All" | "Breakfast" | "Supper";
 
 const itemRows = [
   { item: "Bagels", meal: "Breakfast", total: "620", avg: "44", trend: "+4%" },
@@ -16,21 +17,21 @@ const locationRows = [
   {
     location: "Riverside Community Center",
     breakfast: "280",
-    lunch: "190",
+    supper: "190",
     onTime: "96%",
     lastOrder: "Mar 22",
   },
   {
     location: "Northside Middle School",
     breakfast: "340",
-    lunch: "270",
+    supper: "270",
     onTime: "92%",
     lastOrder: "Mar 22",
   },
   {
     location: "Oak Hill Library",
     breakfast: "140",
-    lunch: "110",
+    supper: "110",
     onTime: "88%",
     lastOrder: "Mar 19",
   },
@@ -40,21 +41,21 @@ const dateRows = [
   {
     date: "Mar 22",
     breakfast: "420",
-    lunch: "310",
+    supper: "310",
     submissions: "12/14",
     late: "1",
   },
   {
     date: "Mar 21",
     breakfast: "398",
-    lunch: "298",
+    supper: "298",
     submissions: "14/14",
     late: "0",
   },
   {
     date: "Mar 20",
     breakfast: "402",
-    lunch: "285",
+    supper: "285",
     submissions: "13/14",
     late: "2",
   },
@@ -65,6 +66,30 @@ export function History() {
   const locationId = searchParams.get("location");
   const location = locationId ? getLocationById(locationId) : null;
   const [tab, setTab] = useState<DrilldownTab>("items");
+  const [season, setSeason] = useState("Spring 2026");
+  const [dateRange, setDateRange] = useState("");
+  const [mealFilter, setMealFilter] = useState<MealFilter>("All");
+  const [locationSearch, setLocationSearch] = useState(location?.name ?? "");
+  const [includeLate, setIncludeLate] = useState("Yes");
+  const [lastAction, setLastAction] = useState<string | null>(null);
+
+  const filteredItemRows = useMemo(() => {
+    if (mealFilter === "All") return itemRows;
+    return itemRows.filter((row) => row.meal === mealFilter);
+  }, [mealFilter]);
+
+  const filteredLocationRows = useMemo(() => {
+    const normalized = locationSearch.trim().toLowerCase();
+    if (!normalized) return locationRows;
+    return locationRows.filter((row) =>
+      row.location.toLowerCase().includes(normalized),
+    );
+  }, [locationSearch]);
+
+  const filteredDateRows = useMemo(() => {
+    if (includeLate === "Yes") return dateRows;
+    return dateRows.filter((row) => row.late === "0");
+  }, [includeLate]);
 
   return (
     <div className="stack">
@@ -73,16 +98,20 @@ export function History() {
         description="Review totals across seasons, locations, and dates."
         actions={
           <div className="button-row">
-            <button className="button">Export report</button>
-            <button className="button ghost">Compare seasons</button>
+            <button className="button" type="button" onClick={() => setLastAction("History export prepared (mock)")}>
+              Export report
+            </button>
+            <button className="button ghost" type="button" onClick={() => setLastAction("Season comparison opened (mock)")}>
+              Compare seasons
+            </button>
           </div>
         }
         meta={
-          location ? (
-            <div className="meta-row">
-              <span className="pill">Filtered: {location.name}</span>
-            </div>
-          ) : undefined
+          <>
+            {location ? <span className="pill">Filtered: {location.name}</span> : null}
+            {season ? <span className="pill subtle">Season: {season}</span> : null}
+            {lastAction ? <span className="pill subtle">{lastAction}</span> : null}
+          </>
         }
       />
 
@@ -94,7 +123,7 @@ export function History() {
           <div className="filter-row">
             <label className="field compact">
               <span>Season</span>
-              <select defaultValue="Spring 2026">
+              <select value={season} onChange={(event) => setSeason(event.target.value)}>
                 <option>Spring 2026</option>
                 <option>Winter 2025</option>
                 <option>Fall 2025</option>
@@ -102,11 +131,19 @@ export function History() {
             </label>
             <label className="field compact">
               <span>Date range</span>
-              <input type="text" placeholder="Mar 1 - May 31" />
+              <input
+                type="text"
+                placeholder="Mar 1 - May 31"
+                value={dateRange}
+                onChange={(event) => setDateRange(event.target.value)}
+              />
             </label>
             <label className="field compact">
               <span>Meal</span>
-              <select defaultValue="All">
+              <select
+                value={mealFilter}
+                onChange={(event) => setMealFilter(event.target.value as MealFilter)}
+              >
                 <option>All</option>
                 <option>Breakfast</option>
                 <option>Supper</option>
@@ -118,20 +155,22 @@ export function History() {
               <span>Location</span>
               <input
                 type="text"
-                placeholder={location ? location.name : "Search locations"}
+                placeholder="Search locations"
+                value={locationSearch}
+                onChange={(event) => setLocationSearch(event.target.value)}
               />
             </label>
             <label className="field compact">
               <span>Group by</span>
-              <select defaultValue="item">
-                <option value="item">Item</option>
-                <option value="location">Location</option>
-                <option value="date">Date</option>
+              <select value={tab} onChange={(event) => setTab(event.target.value as DrilldownTab)}>
+                <option value="items">Item</option>
+                <option value="locations">Location</option>
+                <option value="dates">Date</option>
               </select>
             </label>
             <label className="field compact">
               <span>Include late</span>
-              <select defaultValue="Yes">
+              <select value={includeLate} onChange={(event) => setIncludeLate(event.target.value)}>
                 <option>Yes</option>
                 <option>No</option>
               </select>
@@ -206,7 +245,7 @@ export function History() {
               <div>Avg/day</div>
               <div>Trend</div>
             </div>
-            {itemRows.map((row) => (
+            {filteredItemRows.map((row) => (
               <div key={row.item} className="data-row" style={{ "--cols": "1.6fr 1fr 0.8fr 0.8fr 0.8fr" } as React.CSSProperties}>
                 <div className="item-title">{row.item}</div>
                 <div className="muted">{row.meal}</div>
@@ -227,11 +266,11 @@ export function History() {
               <div>On-time</div>
               <div>Last order</div>
             </div>
-            {locationRows.map((row) => (
+            {filteredLocationRows.map((row) => (
               <div key={row.location} className="data-row" style={{ "--cols": "1.8fr 1fr 1fr 0.9fr 0.9fr" } as React.CSSProperties}>
                 <div className="item-title">{row.location}</div>
                 <div>{row.breakfast}</div>
-                <div>{row.lunch}</div>
+                <div>{row.supper}</div>
                 <div className="muted">{row.onTime}</div>
                 <div>{row.lastOrder}</div>
               </div>
@@ -248,11 +287,11 @@ export function History() {
               <div>Submissions</div>
               <div>Late</div>
             </div>
-            {dateRows.map((row) => (
+            {filteredDateRows.map((row) => (
               <div key={row.date} className="data-row" style={{ "--cols": "1.2fr 1fr 1fr 1fr 0.7fr" } as React.CSSProperties}>
                 <div className="item-title">{row.date}</div>
                 <div>{row.breakfast}</div>
-                <div>{row.lunch}</div>
+                <div>{row.supper}</div>
                 <div>{row.submissions}</div>
                 <div className="muted">{row.late}</div>
               </div>

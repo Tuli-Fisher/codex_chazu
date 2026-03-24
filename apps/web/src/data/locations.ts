@@ -235,25 +235,25 @@ export const donations: DonationRecord[] = [
 
 export const orderHistoryByLocation: Record<
   string,
-  { date: string; breakfast: string; lunch: string; status: string }[]
+  { date: string; breakfast: string; supper: string; status: string }[]
 > = {
   riverside: [
-    { date: "Mar 22", breakfast: "84", lunch: "56", status: "Submitted" },
-    { date: "Mar 21", breakfast: "90", lunch: "60", status: "Locked" },
-    { date: "Mar 20", breakfast: "88", lunch: "58", status: "Locked" },
+    { date: "Mar 22", breakfast: "84", supper: "56", status: "Submitted" },
+    { date: "Mar 21", breakfast: "90", supper: "60", status: "Locked" },
+    { date: "Mar 20", breakfast: "88", supper: "58", status: "Locked" },
   ],
   "northside-ms": [
-    { date: "Mar 22", breakfast: "130", lunch: "110", status: "Submitted" },
-    { date: "Mar 21", breakfast: "124", lunch: "104", status: "Locked" },
-    { date: "Mar 20", breakfast: "118", lunch: "98", status: "Locked" },
+    { date: "Mar 22", breakfast: "130", supper: "110", status: "Submitted" },
+    { date: "Mar 21", breakfast: "124", supper: "104", status: "Locked" },
+    { date: "Mar 20", breakfast: "118", supper: "98", status: "Locked" },
   ],
   "oak-hill": [
-    { date: "Mar 19", breakfast: "60", lunch: "40", status: "Locked" },
-    { date: "Mar 18", breakfast: "58", lunch: "39", status: "Locked" },
+    { date: "Mar 19", breakfast: "60", supper: "40", status: "Locked" },
+    { date: "Mar 18", breakfast: "58", supper: "39", status: "Locked" },
   ],
   southridge: [
-    { date: "Mar 22", breakfast: "72", lunch: "54", status: "Submitted" },
-    { date: "Mar 21", breakfast: "70", lunch: "52", status: "Locked" },
+    { date: "Mar 22", breakfast: "72", supper: "54", status: "Submitted" },
+    { date: "Mar 21", breakfast: "70", supper: "52", status: "Locked" },
   ],
 };
 

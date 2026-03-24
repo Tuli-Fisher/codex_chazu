@@ -1,10 +1,28 @@
 import type { KeyboardEvent, MouseEvent } from "react";
+import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { PageHeader } from "../ui/PageHeader";
 import { locations } from "../data/locations";
 
 export function Locations() {
   const navigate = useNavigate();
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("All");
+  const [seasonFilter, setSeasonFilter] = useState("Spring 2026");
+  const [lastAction, setLastAction] = useState<string | null>(null);
+
+  const filteredLocations = useMemo(() => {
+    const normalizedSearch = search.trim().toLowerCase();
+    return locations.filter((location) => {
+      const matchesSearch =
+        !normalizedSearch ||
+        location.name.toLowerCase().includes(normalizedSearch) ||
+        location.address.city.toLowerCase().includes(normalizedSearch);
+      const matchesStatus =
+        statusFilter === "All" || location.status === statusFilter;
+      return matchesSearch && matchesStatus;
+    });
+  }, [search, statusFilter]);
 
   const openLocation = (locationId: string) => {
     navigate(`/locations/${locationId}`);
@@ -27,20 +45,46 @@ export function Locations() {
         description="Search and manage active meal sites. Open a location to view contacts, fundraising, and history."
         actions={
           <div className="button-row">
-            <button className="button">Export</button>
-            <button className="button primary">Add location</button>
+            <button className="button" type="button" onClick={() => setLastAction("Export prepared (mock)")}>
+              Export
+            </button>
+            <button className="button primary" type="button" onClick={() => setLastAction("Add location flow opened (mock)")}>
+              Add location
+            </button>
           </div>
+        }
+        meta={
+          <>
+            <span className="pill subtle">
+              Showing {filteredLocations.length} of {locations.length}
+            </span>
+            {statusFilter !== "All" ? (
+              <span className="pill">Status: {statusFilter}</span>
+            ) : null}
+            {seasonFilter ? (
+              <span className="pill subtle">Season: {seasonFilter}</span>
+            ) : null}
+            {lastAction ? <span className="pill subtle">{lastAction}</span> : null}
+          </>
         }
       />
 
       <div className="toolbar panel">
         <label className="field compact">
           <span>Search</span>
-          <input type="text" placeholder="Search by name or city" />
+          <input
+            type="text"
+            placeholder="Search by name or city"
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+          />
         </label>
         <label className="field compact">
           <span>Status</span>
-          <select defaultValue="All">
+          <select
+            value={statusFilter}
+            onChange={(event) => setStatusFilter(event.target.value)}
+          >
             <option>All</option>
             <option>Active</option>
             <option>Seasonal</option>
@@ -49,13 +93,25 @@ export function Locations() {
         </label>
         <label className="field compact">
           <span>Season</span>
-          <select defaultValue="Spring 2026">
+          <select
+            value={seasonFilter}
+            onChange={(event) => setSeasonFilter(event.target.value)}
+          >
             <option>Spring 2026</option>
             <option>Winter 2025</option>
             <option>Fall 2025</option>
           </select>
         </label>
-        <button className="button ghost" type="button">
+        <button
+          className="button ghost"
+          type="button"
+          onClick={() => {
+            setSearch("");
+            setStatusFilter("All");
+            setSeasonFilter("Spring 2026");
+            setLastAction("Filters cleared");
+          }}
+        >
           Clear filters
         </button>
       </div>
@@ -71,7 +127,7 @@ export function Locations() {
             <div>Fundraising</div>
             <div>Action</div>
           </div>
-          {locations.map((location) => (
+          {filteredLocations.map((location) => (
             <div
               key={location.id}
               className="data-row clickable"

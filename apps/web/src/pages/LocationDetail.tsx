@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { PageHeader } from "../ui/PageHeader";
 import {
@@ -19,6 +20,7 @@ export function LocationDetail() {
   const location = locationId ? getLocationById(locationId) : null;
   const activeTab =
     tabs.find((tab) => tab.id === searchParams.get("tab"))?.id ?? "overview";
+  const [lastAction, setLastAction] = useState<string | null>(null);
 
   if (!location) {
     return (
@@ -68,7 +70,11 @@ export function LocationDetail() {
             >
               Open donations
             </Link>
-            <button className="button primary" type="button">
+            <button
+              className="button primary"
+              type="button"
+              onClick={() => setLastAction("Edit location flow opened (mock)")}
+            >
               Edit location
             </button>
           </div>
@@ -80,6 +86,7 @@ export function LocationDetail() {
             <span className="pill subtle">
               Weekly participants: {location.weeklyParticipants}
             </span>
+            {lastAction ? <span className="pill subtle">{lastAction}</span> : null}
           </div>
         }
       />
@@ -194,7 +201,11 @@ export function LocationDetail() {
               Add delivery constraints, staffing notes, or reminders for this
               location.
             </p>
-            <button className="button ghost" type="button">
+            <button
+              className="button ghost"
+              type="button"
+              onClick={() => setLastAction("Note editor opened (mock)")}
+            >
               Add note
             </button>
           </section>
@@ -206,7 +217,11 @@ export function LocationDetail() {
           <section className="panel">
             <div className="card-head">
               <h2>Recent orders</h2>
-              <button className="button ghost" type="button">
+              <button
+                className="button ghost"
+                type="button"
+                onClick={() => setLastAction("Full order log opened (mock)")}
+              >
                 View full log
               </button>
             </div>
@@ -221,7 +236,7 @@ export function LocationDetail() {
                 <div key={row.date} className="data-row" style={{ "--cols": historyCols } as React.CSSProperties}>
                   <div>{row.date}</div>
                   <div>{row.breakfast}</div>
-                  <div>{row.lunch}</div>
+                  <div>{row.supper}</div>
                   <div>{row.status}</div>
                 </div>
               ))}
@@ -245,7 +260,11 @@ export function LocationDetail() {
           <section className="panel">
             <div className="card-head">
               <h2>Donation log</h2>
-              <button className="button ghost" type="button">
+              <button
+                className="button ghost"
+                type="button"
+                onClick={() => setLastAction("Add donation flow opened (mock)")}
+              >
                 Add donation
               </button>
             </div>
