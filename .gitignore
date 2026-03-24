@@ -5,6 +5,8 @@ node_modules
 # builds
 /dist
 /.vite
+apps/api/dist
+packages/shared/dist
 
 # env
 .env
