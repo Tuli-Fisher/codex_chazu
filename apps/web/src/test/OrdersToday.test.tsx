@@ -10,6 +10,6 @@ describe("Orders Today page", () => {
       await screen.findByText("Per-location submissions")
     ).toBeInTheDocument();
     expect(screen.getByText("Breakfast totals")).toBeInTheDocument();
-    expect(screen.getByText("Lunch totals")).toBeInTheDocument();
+    expect(screen.getByText("Supper totals")).toBeInTheDocument();
   });
 });

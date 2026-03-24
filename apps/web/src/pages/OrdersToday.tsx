@@ -42,7 +42,7 @@ const submissions: LocationSubmission[] = [
     updatedAt: "12:48 PM",
     breakfast: "submitted",
     lunch: "missing",
-    note: "Lunch pending",
+    note: "Supper pending",
   },
   {
     id: "oak-hill",
@@ -51,7 +51,7 @@ const submissions: LocationSubmission[] = [
     updatedAt: "1:34 PM",
     breakfast: "missing",
     lunch: "late",
-    note: "Late lunch order",
+    note: "Late supper order",
   },
   {
     id: "southridge",
@@ -60,7 +60,7 @@ const submissions: LocationSubmission[] = [
     updatedAt: "-",
     breakfast: "not_ordered",
     lunch: "missing",
-    note: "Lunch not received",
+    note: "Supper not received",
   },
   {
     id: "eastfield",
@@ -69,7 +69,7 @@ const submissions: LocationSubmission[] = [
     updatedAt: "11:52 AM",
     breakfast: "submitted",
     lunch: "not_ordered",
-    note: "Lunch not scheduled",
+    note: "Supper not scheduled",
   },
 ];
 
@@ -105,11 +105,11 @@ export function OrdersToday() {
     <div className="stack">
       <PageHeader
         title="Orders Today"
-        description="Breakfast and lunch orders are collected separately. Each location can submit one or both."
+        description="Breakfast and supper orders are collected separately. Each location can submit one or both."
         actions={
           <div className="button-row">
             <button className="button">Export breakfast</button>
-            <button className="button">Export lunch</button>
+            <button className="button">Export supper</button>
             <button className="button">Export by location</button>
             <button className="button primary">Send and lock</button>
           </div>
@@ -117,7 +117,7 @@ export function OrdersToday() {
         meta={
           <div className="meta-row">
             <span className="pill">Breakfast: {breakfastSubmitted} submitted</span>
-            <span className="pill">Lunch: {lunchSubmitted} submitted</span>
+            <span className="pill">Supper: {lunchSubmitted} submitted</span>
             <span className="pill warning">{missingEither} missing</span>
             <span className="pill warning">{lateCount} late</span>
           </div>
@@ -135,7 +135,7 @@ export function OrdersToday() {
         </div>
         <div className="card stat-card" style={{ "--i": 2 } as React.CSSProperties}>
           <div className="stat">{lunchSubmitted}</div>
-          <div className="muted">Lunch submitted</div>
+          <div className="muted">Supper submitted</div>
         </div>
         <div className="card stat-card" style={{ "--i": 3 } as React.CSSProperties}>
           <div className="stat">{missingEither}</div>
@@ -148,7 +148,7 @@ export function OrdersToday() {
           <div>
             <h2>Per-location submissions</h2>
             <div className="muted">
-              Breakfast cutoff 7:15 AM | Lunch cutoff 11:00 AM
+              Breakfast cutoff 7:15 AM | Supper cutoff 11:00 AM
             </div>
           </div>
           <div className="button-row">
@@ -164,7 +164,7 @@ export function OrdersToday() {
           <div className="data-row header" style={{ "--cols": perLocationCols } as React.CSSProperties}>
             <div>Location</div>
             <div>Breakfast</div>
-            <div>Lunch</div>
+            <div>Supper</div>
             <div>Last update</div>
             <div>Contact</div>
             <div>Actions</div>
@@ -221,9 +221,9 @@ export function OrdersToday() {
 
         <section className="card">
           <div className="card-head">
-            <h2>Lunch totals</h2>
+            <h2>Supper totals</h2>
             <button className="button ghost" type="button">
-              View lunch by location
+              View supper by location
             </button>
           </div>
           <div className="table">

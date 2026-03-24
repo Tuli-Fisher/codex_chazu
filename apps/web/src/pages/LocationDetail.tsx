@@ -214,7 +214,7 @@ export function LocationDetail() {
               <div className="data-row header" style={{ "--cols": historyCols } as React.CSSProperties}>
                 <div>Date</div>
                 <div>Breakfast</div>
-                <div>Lunch</div>
+                <div>Supper</div>
                 <div>Status</div>
               </div>
               {historyRows.map((row) => (

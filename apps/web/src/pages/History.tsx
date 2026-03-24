@@ -8,8 +8,8 @@ type DrilldownTab = "items" | "locations" | "dates";
 const itemRows = [
   { item: "Bagels", meal: "Breakfast", total: "620", avg: "44", trend: "+4%" },
   { item: "Yogurt cups", meal: "Breakfast", total: "480", avg: "34", trend: "+2%" },
-  { item: "Chicken chili", meal: "Lunch", total: "310", avg: "22", trend: "-3%" },
-  { item: "Green salad", meal: "Lunch", total: "260", avg: "18", trend: "+1%" },
+  { item: "Chicken chili", meal: "Supper", total: "310", avg: "22", trend: "-3%" },
+  { item: "Green salad", meal: "Supper", total: "260", avg: "18", trend: "+1%" },
 ];
 
 const locationRows = [
@@ -109,7 +109,7 @@ export function History() {
               <select defaultValue="All">
                 <option>All</option>
                 <option>Breakfast</option>
-                <option>Lunch</option>
+                <option>Supper</option>
               </select>
             </label>
           </div>
@@ -223,7 +223,7 @@ export function History() {
             <div className="data-row header" style={{ "--cols": "1.8fr 1fr 1fr 0.9fr 0.9fr" } as React.CSSProperties}>
               <div>Location</div>
               <div>Breakfast</div>
-              <div>Lunch</div>
+              <div>Supper</div>
               <div>On-time</div>
               <div>Last order</div>
             </div>
@@ -244,7 +244,7 @@ export function History() {
             <div className="data-row header" style={{ "--cols": "1.2fr 1fr 1fr 1fr 0.7fr" } as React.CSSProperties}>
               <div>Date</div>
               <div>Breakfast</div>
-              <div>Lunch</div>
+              <div>Supper</div>
               <div>Submissions</div>
               <div>Late</div>
             </div>
